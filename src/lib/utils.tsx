@@ -1,27 +1,26 @@
-import {Booking} from "./types";
-import {Icon} from "@raycast/api";
+import { Booking } from "./types";
+import { Icon } from "@raycast/api";
 
-export function renderSectionTitle(date: Date|null): string {
+export function renderSectionTitle(date: Date | null): string {
   const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const today = new Date();
   const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
 
-  if(date === null) {
+  if (date === null) {
     return "-";
   }
 
   if (date.toDateString() == today.toDateString()) {
-    return "Today"
+    return "Today";
   } else if (date.toDateString() == tomorrow.toDateString()) {
-    return "Tomorrow"
+    return "Tomorrow";
   } else {
     return weekday[date.getDay()];
   }
 }
 
 export function renderSeatIcon(booking: Booking) {
-
-  if(booking.userStatus == "absent") {
+  if (booking.userStatus == "absent") {
     return Icon.Multiply;
   } else if (booking.userStatus == "home") {
     return Icon.House;
@@ -33,9 +32,8 @@ export function renderSeatIcon(booking: Booking) {
 }
 
 export function renderSeatName(booking: Booking): string {
-
   let seatName = renderSectionTitle(booking.date) + ":";
-  if(booking.seatBooked?.name) {
+  if (booking.seatBooked?.name) {
     seatName += " " + booking.seatBooked?.name;
   }
 
@@ -43,8 +41,10 @@ export function renderSeatName(booking: Booking): string {
 }
 
 export function renderSeatNo(booking: Booking): string {
-  if(booking.seatBooked?.locationName) {
-    return booking.seatBooked!.locationName + ", " + booking.seatBooked!.floorName + ", " + booking.seatBooked!.roomName;
+  if (booking.seatBooked?.locationName) {
+    return (
+      booking.seatBooked!.locationName + ", " + booking.seatBooked!.floorName + ", " + booking.seatBooked!.roomName
+    );
   }
   return "no seat booked";
 }

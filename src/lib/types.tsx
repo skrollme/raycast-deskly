@@ -5,10 +5,10 @@ export interface Preferences {
 
 export interface Booking {
   date: Date;
-  seatBooked: BookingSeat|null;
-  from: string|null;
-  until: string|null;
-  userStatus: string|null;
+  seatBooked: BookingSeat | null;
+  from: string | null;
+  until: string | null;
+  userStatus: string | null;
 }
 
 export interface BookingSeat {
@@ -22,8 +22,8 @@ export interface BookingSeat {
 
 export interface RefreshTokenResponse {
   token: string;
-  refreshToken: string|null;
-  refresh_token_expiration: string|null;
+  refreshToken: string | null;
+  refresh_token_expiration: string | null;
 }
 
 export interface AuthData {
