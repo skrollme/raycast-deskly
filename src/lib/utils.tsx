@@ -19,7 +19,7 @@ export function renderSectionTitle(date: Date | null): string {
   }
 }
 
-export function renderSeatIcon(booking: Booking) {
+export function renderSeatIcon(booking: Booking): Icon {
   if (booking.userStatus == "absent") {
     return Icon.Multiply;
   } else if (booking.userStatus == "home") {
@@ -43,7 +43,7 @@ export function renderSeatName(booking: Booking): string {
 export function renderSeatNo(booking: Booking): string {
   if (booking.seatBooked?.locationName) {
     return (
-      booking.seatBooked!.locationName + ", " + booking.seatBooked!.floorName + ", " + booking.seatBooked!.roomName
+      booking.seatBooked?.locationName + ", " + booking.seatBooked?.floorName + ", " + booking.seatBooked?.roomName
     );
   }
   return "no seat booked";

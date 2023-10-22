@@ -1,7 +1,7 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "raycast-deskly",
-  "title": "desk.ly",
+  "title": "Desk.ly",
   "description": "Manage your desk.ly desk-sharing bookings",
   "icon": "command-icon.png",
   "author": "skroll",
