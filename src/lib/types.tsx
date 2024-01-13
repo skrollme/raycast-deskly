@@ -5,7 +5,8 @@ export interface Preferences {
 
 export interface Booking {
   date: Date;
-  seatBooked: BookingSeat | null;
+  seat: BookingSeat | null; // bookings request
+  seatBooked: BookingSeat | null; // calendar request
   from: string | null;
   until: string | null;
   userStatus: string | null;
@@ -31,4 +32,13 @@ export interface AuthData {
   tokenExpiration: number;
   refreshToken: string;
   refreshTokenExpiration: number;
+}
+
+export interface Information {
+  user: {
+    id: string | null;
+    email: string | null;
+    firstName: string | null;
+    lastName: string | null;
+  };
 }
