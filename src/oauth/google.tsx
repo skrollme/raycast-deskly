@@ -9,7 +9,7 @@ const clientId = "447383343306-l27ruhhqgubf931iuga1lnhodsdn94nt.apps.googleuserc
 export const client = new OAuth.PKCEClient({
   redirectMethod: OAuth.RedirectMethod.AppURI,
   providerName: "Google",
-  providerIcon: "google-logo.png",
+  providerIcon: "deskly-icon.png",
   providerId: "google",
   description: "Connect to desk.ly via your Google account",
 });

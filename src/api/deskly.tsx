@@ -63,6 +63,9 @@ export async function fetchCalendar(): Promise<Booking[]> {
   const preferences = getPreferenceValues<Preferences>();
   const authData = await fetchAccessToken();
 
+  authorize();
+  client.getTokens().then((r) => console.log(r));
+
   const response = await fetch(preferences.apiUrl + `/de/api/homepage/calendar`, {
     method: "GET",
     headers: {

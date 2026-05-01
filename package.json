@@ -3,7 +3,7 @@
   "name": "raycast-deskly",
   "title": "Desk.ly",
   "description": "Manage your desk.ly desk-sharing bookings",
-  "icon": "command-icon.png",
+  "icon": "deskly-icon.png",
   "author": "skroll",
   "categories": [
     "Productivity"
