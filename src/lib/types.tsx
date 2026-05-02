@@ -14,6 +14,8 @@ export interface Booking {
   from: string | null;
   until: string | null;
   userStatus: string | null;
+  profileImage: string | null;
+  userCheckedIn: boolean | null;
 }
 
 export interface BookingSeat {
@@ -23,6 +25,7 @@ export interface BookingSeat {
   floorName: string;
   locationName: string;
   roomName: string;
+  room: string | null;
 }
 
 export interface AuthData {

@@ -1,5 +1,5 @@
 import { Booking } from "./types";
-import { Icon } from "@raycast/api";
+import { Icon, Image } from "@raycast/api";
 
 export function renderBookingDate(booking: Booking): string {
   const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -27,18 +27,10 @@ export function renderBookingDate(booking: Booking): string {
   return bookingDate;
 }
 
-export function renderSeatIcon(booking: Booking): Icon {
-  if (booking.multipleBookings) {
-    return Icon.Ellipsis;
-  } else if (booking.userStatus == "absent") {
-    return Icon.Multiply;
-  } else if (booking.userStatus == "home") {
-    return Icon.House;
-  } else if (booking.userStatus == "office") {
-    return Icon.Building;
-  } else {
-    return Icon.QuestionMark;
-  }
+export function bookingIcon(booking: Booking, apiUrl: string): Icon | Image.ImageLike {
+  if (booking.userCheckedIn) return Icon.CheckCircle;
+  if (booking.profileImage) return { source: apiUrl + booking.profileImage, mask: Image.Mask.Circle };
+  return Icon.Person;
 }
 
 export function renderSeatName(booking: Booking): string {

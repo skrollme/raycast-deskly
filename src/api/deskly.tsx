@@ -121,6 +121,21 @@ export async function bookSeat(date: Date, seat: BookingSeat): Promise<void> {
   }
 }
 
+export async function fetchRoomPlanImage(roomId: string): Promise<string | null> {
+  const preferences = getPreferenceValues<Preferences>();
+  const authData = await fetchAccessToken();
+
+  const response = await fetch(`${preferences.apiUrl}/de/image/room-plan/${roomId}`, {
+    headers: { Authorization: `Bearer ${authData.token}` },
+  });
+
+  if (!response.ok) return null;
+
+  const arrayBuffer = await response.arrayBuffer();
+  const contentType = response.headers.get("content-type") ?? "image/png";
+  return `data:${contentType};base64,${Buffer.from(arrayBuffer).toString("base64")}`;
+}
+
 async function fetchAccessToken(): Promise<AuthData> {
   const preferences = getPreferenceValues<Preferences>();
 

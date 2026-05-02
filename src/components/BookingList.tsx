@@ -1,48 +1,60 @@
 import { Booking, Preferences } from "../lib/types";
 import { Action, ActionPanel, getPreferenceValues, Icon, List } from "@raycast/api";
-import { renderSeatIcon, renderSeatName, renderBookingDate } from "../lib/utils";
+import { bookingIcon, renderSeatName } from "../lib/utils";
 import BookingDetail from "./BookingDetail";
-import DayBookingList from "./DayBookingList";
 
-export default function BookingList({ bookings, title = "Next five days" }: { bookings: Booking[]; title?: string }) {
-  const { showLocation, showFloor, showRoom } = getPreferenceValues<Preferences>();
+function dayTitle(date: Date): string {
+  const today = new Date();
+  const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+  if (date.toDateString() === today.toDateString()) return "Today";
+  if (date.toDateString() === tomorrow.toDateString()) return "Tomorrow";
+  return date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+}
+
+function bookingTime(booking: Booking): string {
+  if (booking.from && booking.until) {
+    return `${booking.from.substring(0, 5)} – ${booking.until.substring(0, 5)}`;
+  }
+  return "";
+}
+
+export default function BookingList({ bookings }: { bookings: Booking[] }) {
+  const { apiUrl, showLocation, showFloor, showRoom } = getPreferenceValues<Preferences>();
+
+  const byDay = new Map<string, Booking[]>();
+  for (const booking of bookings) {
+    const key = booking.date.toDateString();
+    const group = byDay.get(key) ?? [];
+    group.push(booking);
+    byDay.set(key, group);
+  }
 
   return (
-    <List.Section title={title}>
-      {bookings.map((booking: Booking) => (
-        <List.Item
-          key={booking.date.toDateString() + booking.seat?.id}
-          icon={renderSeatIcon(booking)}
-          title={renderSeatName(booking)}
-          subtitle={renderBookingDate(booking)}
-          accessories={
-            booking.multipleBookings
-              ? []
-              : [
-                  ...(showLocation ? [{ text: booking.seatBooked?.locationName ?? booking.seat?.locationName }] : []),
-                  ...(showFloor
-                    ? [{ text: booking.seatBooked?.floorName ?? booking.seat?.floorName, icon: Icon.ArrowUp }]
-                    : []),
-                  ...(showRoom
-                    ? [{ text: booking.seatBooked?.roomName ?? booking.seat?.roomName, icon: Icon.Map }]
-                    : []),
-                ]
-          }
-          actions={
-            <ActionPanel>
-              {booking.multipleBookings ? (
-                <Action.Push
-                  title="Show Day Bookings"
-                  icon={Icon.Calendar}
-                  target={<DayBookingList date={booking.date} />}
-                />
-              ) : (
-                <Action.Push title="Show Details" icon={Icon.Sidebar} target={<BookingDetail booking={booking} />} />
-              )}
-            </ActionPanel>
-          }
-        />
+    <>
+      {[...byDay.entries()].map(([, dayBookings]) => (
+        <List.Section key={dayBookings[0].date.toDateString()} title={dayTitle(dayBookings[0].date)}>
+          {dayBookings.map((booking) => (
+            <List.Item
+              key={booking.date.toDateString() + booking.seat?.id}
+              icon={bookingIcon(booking, apiUrl)}
+              title={renderSeatName(booking)}
+              subtitle={bookingTime(booking)}
+              accessories={[
+                ...(showLocation ? [{ text: booking.seatBooked?.locationName ?? booking.seat?.locationName }] : []),
+                ...(showFloor
+                  ? [{ text: booking.seatBooked?.floorName ?? booking.seat?.floorName, icon: Icon.ArrowUp }]
+                  : []),
+                ...(showRoom ? [{ text: booking.seatBooked?.roomName ?? booking.seat?.roomName, icon: Icon.Map }] : []),
+              ]}
+              actions={
+                <ActionPanel>
+                  <Action.Push title="Show Details" icon={Icon.Sidebar} target={<BookingDetail booking={booking} />} />
+                </ActionPanel>
+              }
+            />
+          ))}
+        </List.Section>
       ))}
-    </List.Section>
+    </>
   );
 }

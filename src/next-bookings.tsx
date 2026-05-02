@@ -9,7 +9,7 @@ import {
   updateCommandMetadata,
 } from "@raycast/api";
 import BookingList from "./components/BookingList";
-import { fetchCalendar } from "./api/deskly";
+import { fetchBookings } from "./api/deskly";
 import { Booking, Preferences } from "./lib/types";
 import { useEffect, useState } from "react";
 import { renderBookingDate, renderSeatName } from "./lib/utils";
@@ -21,8 +21,21 @@ export default function Command(props: LaunchProps) {
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await fetchCalendar();
-      setBookings(data);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const year = today.getFullYear();
+      const month = today.getMonth() + 1;
+      const nextMonth = month === 12 ? 1 : month + 1;
+      const nextYear = month === 12 ? year + 1 : year;
+
+      const [current, next] = await Promise.all([fetchBookings(year, month), fetchBookings(nextYear, nextMonth)]);
+
+      const all = [...current, ...next]
+        .filter((b) => b.date >= today)
+        .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+      setBookings(all);
       setIsLoading(false);
     };
 
