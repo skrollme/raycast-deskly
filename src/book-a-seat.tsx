@@ -1,4 +1,14 @@
-import { Action, ActionPanel, Form, popToRoot, showToast, Toast } from "@raycast/api";
+import {
+  Action,
+  ActionPanel,
+  Form,
+  launchCommand,
+  LaunchProps,
+  LaunchType,
+  popToRoot,
+  showToast,
+  Toast,
+} from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
 import { useEffect, useState } from "react";
 import { bookSeat, fetchBookings, fetchFavoriteSeats, fetchInformation } from "./api/deskly";
@@ -49,9 +59,10 @@ async function fetchBookingFormData() {
   return { favoriteSeats, defaultDate: nextWeekday(lastBookedDate), maxDays };
 }
 
-export default function Command() {
+export default function Command(props: LaunchProps) {
+  const contextDate = (props.launchContext as { defaultDate?: string } | undefined)?.defaultDate;
   const { data, isLoading } = useCachedPromise(fetchBookingFormData);
-  const [date, setDate] = useState<Date | null | undefined>(undefined);
+  const [date, setDate] = useState<Date | null | undefined>(contextDate ? new Date(contextDate) : undefined);
   const [dateError, setDateError] = useState<string | undefined>();
   const [seatError, setSeatError] = useState<string | undefined>();
 
@@ -103,6 +114,11 @@ export default function Command() {
       await bookSeat(values.date, seat);
       toast.style = Toast.Style.Success;
       toast.title = "Seat booked!";
+      const bookedDate = new Date(values.date);
+      bookedDate.setHours(0, 0, 0, 0);
+      if (bookedDate.getTime() === today.getTime()) {
+        await launchCommand({ name: "todays-booking", type: LaunchType.Background });
+      }
       await popToRoot();
     } catch (e) {
       toast.style = Toast.Style.Failure;

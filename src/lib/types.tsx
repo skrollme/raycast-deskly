@@ -7,6 +7,7 @@ export interface Preferences {
 }
 
 export interface Booking {
+  id: string;
   date: Date;
   multipleBookings: boolean | null;
   seat: BookingSeat | null;

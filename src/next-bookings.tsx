@@ -6,9 +6,12 @@ import {
   LaunchProps,
   LaunchType,
   List,
+  popToRoot,
   updateCommandMetadata,
+  useNavigation,
 } from "@raycast/api";
 import BookingList from "./components/BookingList";
+import BookingDetail from "./components/BookingDetail";
 import { fetchBookings } from "./api/deskly";
 import { Booking, Preferences } from "./lib/types";
 import { useEffect, useState } from "react";
@@ -18,6 +21,8 @@ export default function Command(props: LaunchProps) {
   const preferences = getPreferenceValues<Preferences>();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { push } = useNavigation();
+  const openTodayBooking = (props.launchContext as { openTodayBooking?: boolean } | undefined)?.openTodayBooking;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,6 +54,13 @@ export default function Command(props: LaunchProps) {
       updateCommandMetadata({ subtitle: `No future bookings` });
     }
   }, [bookings]);
+
+  useEffect(() => {
+    if (!openTodayBooking || isLoading) return;
+    const today = new Date();
+    const todayBooking = bookings.find((b) => b.date.toDateString() === today.toDateString());
+    if (todayBooking) push(<BookingDetail booking={todayBooking} onDeleted={popToRoot} />);
+  }, [isLoading]);
 
   if (props.launchType === LaunchType.Background) {
     return;

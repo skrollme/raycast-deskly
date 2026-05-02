@@ -122,6 +122,23 @@ export async function bookSeat(date: Date, seat: BookingSeat): Promise<void> {
   }
 }
 
+export async function deleteBooking(bookingId: string): Promise<void> {
+  const preferences = getPreferenceValues<Preferences>();
+  const authData = await fetchAccessToken();
+
+  const response = await fetch(preferences.apiUrl + `/de/api/dayBooking/${bookingId}/delete`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${authData.token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`${response.status} ${response.statusText}: ${body}`);
+  }
+}
+
 export async function fetchRoomPlanImage(roomId: string, seat: BookingSeat): Promise<string | null> {
   const preferences = getPreferenceValues<Preferences>();
   const authData = await fetchAccessToken();
