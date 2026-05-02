@@ -1,12 +1,16 @@
 export interface Preferences {
   apiUrl: string;
   refreshToken: string;
+  showLocation: boolean;
+  showFloor: boolean;
+  showRoom: boolean;
 }
 
 export interface Booking {
   date: Date;
-  seat: BookingSeat | null; // bookings request
-  seatBooked: BookingSeat | null; // calendar request
+  multipleBookings: boolean | null;
+  seat: BookingSeat | null;
+  seatBooked: BookingSeat | null;
   from: string | null;
   until: string | null;
   userStatus: string | null;
@@ -14,17 +18,11 @@ export interface Booking {
 
 export interface BookingSeat {
   id: string;
-  number: string;
+  number: number | null;
   name: string;
   floorName: string;
   locationName: string;
   roomName: string;
-}
-
-export interface RefreshTokenResponse {
-  token: string;
-  refreshToken: string | null;
-  refresh_token_expiration: string | null;
 }
 
 export interface AuthData {

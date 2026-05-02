@@ -1,8 +1,11 @@
-import { Booking } from "../lib/types";
-import { List } from "@raycast/api";
+import { Booking, Preferences } from "../lib/types";
+import { Action, ActionPanel, getPreferenceValues, Icon, List } from "@raycast/api";
 import { renderSeatIcon, renderSeatName, renderBookingDate } from "../lib/utils";
+import BookingDetail from "./BookingDetail";
 
 export default function BookingList({ bookings }: { bookings: Booking[] }) {
+  const { showLocation, showFloor, showRoom } = getPreferenceValues<Preferences>();
+
   return (
     <List.Section title="Next five days">
       {bookings.map((booking: Booking) => (
@@ -12,17 +15,20 @@ export default function BookingList({ bookings }: { bookings: Booking[] }) {
           title={renderSeatName(booking)}
           subtitle={renderBookingDate(booking)}
           accessories={[
-            {
-              text: booking.seat?.locationName,
-            },
-            {
-              text: booking.seat?.floorName,
-            },
-            {
-              text: booking.seat?.roomName,
-            },
+            ...(showLocation ? [{ text: booking.seatBooked?.locationName }] : []),
+            ...(showFloor ? [{ text: booking.seatBooked?.floorName }] : []),
+            ...(showRoom ? [{ text: booking.seatBooked?.roomName }] : []),
           ]}
-        ></List.Item>
+          actions={
+            <ActionPanel>
+              <Action.Push
+                title="Show Details"
+                icon={Icon.Sidebar}
+                target={<BookingDetail booking={booking} />}
+              />
+            </ActionPanel>
+          }
+        />
       ))}
     </List.Section>
   );

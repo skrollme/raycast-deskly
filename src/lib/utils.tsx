@@ -28,7 +28,9 @@ export function renderBookingDate(booking: Booking): string {
 }
 
 export function renderSeatIcon(booking: Booking): Icon {
-  if (booking.userStatus == "absent") {
+  if (booking.multipleBookings) {
+    return Icon.Ellipsis;
+  } else if (booking.userStatus == "absent") {
     return Icon.Multiply;
   } else if (booking.userStatus == "home") {
     return Icon.House;
@@ -44,6 +46,8 @@ export function renderSeatName(booking: Booking): string {
     return booking.seat?.name;
   } else if (booking.seatBooked?.name) {
     return booking.seatBooked?.name;
+  } else if (booking.multipleBookings) {
+    return "Multiple bookings";
   } else {
     return "No seat booked";
   }
