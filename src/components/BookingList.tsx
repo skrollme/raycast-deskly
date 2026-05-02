@@ -20,8 +20,12 @@ export default function BookingList({ bookings, title = "Next five days" }: { bo
               ? []
               : [
                   ...(showLocation ? [{ text: booking.seatBooked?.locationName ?? booking.seat?.locationName }] : []),
-                  ...(showFloor ? [{ text: booking.seatBooked?.floorName ?? booking.seat?.floorName, icon: Icon.ArrowUp }] : []),
-                  ...(showRoom ? [{ text: booking.seatBooked?.roomName ?? booking.seat?.roomName, icon: Icon.Map }] : []),
+                  ...(showFloor
+                    ? [{ text: booking.seatBooked?.floorName ?? booking.seat?.floorName, icon: Icon.ArrowUp }]
+                    : []),
+                  ...(showRoom
+                    ? [{ text: booking.seatBooked?.roomName ?? booking.seat?.roomName, icon: Icon.Map }]
+                    : []),
                 ]
           }
           actions={
@@ -33,11 +37,7 @@ export default function BookingList({ bookings, title = "Next five days" }: { bo
                   target={<DayBookingList date={booking.date} />}
                 />
               ) : (
-                <Action.Push
-                  title="Show Details"
-                  icon={Icon.Sidebar}
-                  target={<BookingDetail booking={booking} />}
-                />
+                <Action.Push title="Show Details" icon={Icon.Sidebar} target={<BookingDetail booking={booking} />} />
               )}
             </ActionPanel>
           }

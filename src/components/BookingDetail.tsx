@@ -44,9 +44,7 @@ export default function BookingDetail({ booking }: { booking: Booking }) {
               {seat.locationName && (
                 <Detail.Metadata.Label title="Location" text={seat.locationName} icon={Icon.Building} />
               )}
-              {seat.floorName && (
-                <Detail.Metadata.Label title="Floor" text={seat.floorName} icon={Icon.ArrowUp} />
-              )}
+              {seat.floorName && <Detail.Metadata.Label title="Floor" text={seat.floorName} icon={Icon.ArrowUp} />}
               {seat.roomName && <Detail.Metadata.Label title="Room" text={seat.roomName} icon={Icon.Map} />}
             </>
           )}
