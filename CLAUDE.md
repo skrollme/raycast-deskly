@@ -20,14 +20,14 @@ This is a Raycast extension for managing [desk.ly](https://desk.ly) desk-sharing
 
 ### Commands (entry points)
 
-- [src/my-bookings.tsx](src/my-bookings.tsx) — "Next Bookings" list view command; fetches calendar data and renders upcoming bookings
-- [src/todays-booking.tsx](src/todays-booking.tsx) — "Today's Bookings" no-view command; runs every 15 minutes in the background (currently a stub that only updates command metadata)
+- [src/next-bookings.tsx](src/next-bookings.tsx) — "Next Bookings" list view command; fetches calendar data and renders upcoming bookings
+- [src/todays-booking.tsx](src/todays-booking.tsx) — "Today's Bookings" no-view command; runs every 15 minutes in the background; fetches today's booking via `fetchBookings` and updates the command subtitle with seat name + time, or "No booking today"
 
 ### API layer
 
 [src/api/deskly.tsx](src/api/deskly.tsx) is the sole HTTP client. Key functions:
 
-- `fetchCalendar()` — primary endpoint used by `my-bookings`; returns next bookings with `seatBooked` field
+- `fetchCalendar()` — primary endpoint used by `next-bookings`; returns next bookings with `seatBooked` field
 - `fetchBookings()` — month-based endpoint using `seat` field instead of `seatBooked`
 - `fetchInformation()` — returns user info; caches result in `LocalStorage`
 - `fetchAccessToken()` — exchanges the refresh token for a short-lived access token; caches in `LocalStorage` with expiration tracking; called automatically before every authenticated request

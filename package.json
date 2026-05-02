@@ -11,7 +11,7 @@
   "license": "MIT",
   "commands": [
     {
-      "name": "my-bookings",
+      "name": "next-bookings",
       "title": "Next Bookings",
       "description": "Show my next Bookings",
       "mode": "view"
