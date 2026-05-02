@@ -22,18 +22,15 @@ export async function fetchInformation(accessToken: string): Promise<Information
   return information;
 }
 
-export async function fetchBookings(): Promise<Booking[]> {
+export async function fetchBookings(year: number, month: number): Promise<Booking[]> {
   const preferences = getPreferenceValues<Preferences>();
   const authData = await fetchAccessToken();
   const information = await fetchInformation(authData.token);
 
   const zeroPad = (num: number, places: number) => String(num).padStart(places, "0");
 
-  const year = new Date().getFullYear();
-  const month = zeroPad(new Date().getMonth() + 1, 2);
-
   const response = await fetch(
-    preferences.apiUrl + `/de/api/dayBookings/user/${information.user.id}/year/${year}/month/${month}`,
+    preferences.apiUrl + `/de/api/dayBookings/user/${information.user.id}/year/${year}/month/${zeroPad(month, 2)}`,
     {
       method: "GET",
       headers: {
@@ -43,14 +40,11 @@ export async function fetchBookings(): Promise<Booking[]> {
     }
   );
 
-  const midnight = new Date().setHours(0, 0, 0, 0);
-  return ((await response.json()) as Booking[])
-    .map((result: Booking) => {
-      const booking = result as Booking;
-      booking.date = new Date(result.date);
-      return booking;
-    })
-    .filter((booking: Booking) => booking.date.getTime() >= midnight);
+  return ((await response.json()) as Booking[]).map((result: Booking) => {
+    const booking = result as Booking;
+    booking.date = new Date(result.date);
+    return booking;
+  });
 }
 
 export async function fetchCalendar(): Promise<Booking[]> {
