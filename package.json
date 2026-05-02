@@ -17,6 +17,12 @@
       "mode": "view"
     },
     {
+      "name": "book-a-seat",
+      "title": "Book a Seat",
+      "description": "Book a desk.ly seat",
+      "mode": "view"
+    },
+    {
       "name": "todays-booking",
       "title": "Today's Bookings",
       "description": "Show my today's Booking",

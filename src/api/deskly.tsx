@@ -1,8 +1,8 @@
 import { getPreferenceValues, LocalStorage } from "@raycast/api";
-import { AuthData, Booking, Information, Preferences } from "../lib/types";
+import { AuthData, Booking, BookingSeat, Information, Preferences } from "../lib/types";
 import fetch from "node-fetch";
 
-export async function fetchInformation(accessToken: string): Promise<Information> {
+export async function fetchInformation(): Promise<Information> {
   const preferences = getPreferenceValues<Preferences>();
 
   const cached = await LocalStorage.getItem<string>("information");
@@ -10,10 +10,11 @@ export async function fetchInformation(accessToken: string): Promise<Information
     return JSON.parse(cached) as Information;
   }
 
+  const authData = await fetchAccessToken();
   const response = await fetch(preferences.apiUrl + "/de/api/information", {
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${authData.token}`,
     },
   });
 
@@ -25,7 +26,7 @@ export async function fetchInformation(accessToken: string): Promise<Information
 export async function fetchBookings(year: number, month: number): Promise<Booking[]> {
   const preferences = getPreferenceValues<Preferences>();
   const authData = await fetchAccessToken();
-  const information = await fetchInformation(authData.token);
+  const information = await fetchInformation();
 
   const zeroPad = (num: number, places: number) => String(num).padStart(places, "0");
 
@@ -47,6 +48,21 @@ export async function fetchBookings(year: number, month: number): Promise<Bookin
   });
 }
 
+export async function fetchFavoriteSeats(): Promise<BookingSeat[]> {
+  const preferences = getPreferenceValues<Preferences>();
+  const authData = await fetchAccessToken();
+
+  const response = await fetch(preferences.apiUrl + "/de/api/user/favorite/seats", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${authData.token}`,
+    },
+  });
+
+  return (await response.json()) as BookingSeat[];
+}
+
 export async function fetchCalendar(): Promise<Booking[]> {
   const preferences = getPreferenceValues<Preferences>();
   const authData = await fetchAccessToken();
@@ -64,6 +80,45 @@ export async function fetchCalendar(): Promise<Booking[]> {
     booking.date = new Date(result.date);
     return booking;
   });
+}
+
+export async function bookSeat(date: Date, seat: BookingSeat): Promise<void> {
+  const preferences = getPreferenceValues<Preferences>();
+  const authData = await fetchAccessToken();
+  const information = await fetchInformation();
+
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const datePrefix = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+  const response = await fetch(preferences.apiUrl + "/de/api/resource-booking", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${authData.token}`,
+    },
+    body: JSON.stringify({
+      email: false,
+      user: information.user.id,
+      resource: seat.id,
+      guestName: null,
+      guestEmail: null,
+      guestCompany: null,
+      guestAnonymous: false,
+      resourceBookings: [
+        {
+          from: `${datePrefix}T08:00:00`,
+          until: `${datePrefix}T17:00:00`,
+          bookedCapacity: 1,
+          cateringServiceText: null,
+        },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`${response.status} ${response.statusText}: ${body}`);
+  }
 }
 
 async function fetchAccessToken(): Promise<AuthData> {

@@ -39,4 +39,7 @@ export interface Information {
     firstName: string | null;
     lastName: string | null;
   };
+  accountInformation: {
+    maxBookingDays: number | null;
+  };
 }
