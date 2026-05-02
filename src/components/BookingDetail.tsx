@@ -17,11 +17,11 @@ export default function BookingDetail({ booking }: { booking: Booking }) {
   });
 
   useEffect(() => {
-    const room = booking.seat?.room;
-    if (!room) return;
+    const seatObj = booking.seat;
+    if (!seatObj?.room) return;
 
     setIsLoadingImage(true);
-    fetchRoomPlanImage(room)
+    fetchRoomPlanImage(seatObj.room, seatObj)
       .then(setRoomPlanDataUri)
       .finally(() => setIsLoadingImage(false));
   }, [booking.seat?.room]);

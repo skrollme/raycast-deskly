@@ -26,6 +26,8 @@ export interface BookingSeat {
   locationName: string;
   roomName: string;
   room: string | null;
+  locationX: number | null;
+  locationY: number | null;
 }
 
 export interface AuthData {

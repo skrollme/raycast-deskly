@@ -1,6 +1,7 @@
 import { getPreferenceValues, LocalStorage } from "@raycast/api";
 import { AuthData, Booking, BookingSeat, Information, Preferences } from "../lib/types";
 import fetch from "node-fetch";
+import { Jimp, JimpMime, rgbaToInt } from "jimp";
 
 export async function fetchInformation(): Promise<Information> {
   const preferences = getPreferenceValues<Preferences>();
@@ -121,7 +122,7 @@ export async function bookSeat(date: Date, seat: BookingSeat): Promise<void> {
   }
 }
 
-export async function fetchRoomPlanImage(roomId: string): Promise<string | null> {
+export async function fetchRoomPlanImage(roomId: string, seat: BookingSeat): Promise<string | null> {
   const preferences = getPreferenceValues<Preferences>();
   const authData = await fetchAccessToken();
 
@@ -131,9 +132,23 @@ export async function fetchRoomPlanImage(roomId: string): Promise<string | null>
 
   if (!response.ok) return null;
 
-  const arrayBuffer = await response.arrayBuffer();
-  const contentType = response.headers.get("content-type") ?? "image/png";
-  return `data:${contentType};base64,${Buffer.from(arrayBuffer).toString("base64")}`;
+  const buffer = Buffer.from(await response.arrayBuffer());
+  const image = await Jimp.fromBuffer(buffer);
+
+  if (seat.locationX != null && seat.locationY != null) {
+    const r = Math.round(image.width * 0.0125); // diameter = 2,5% of width → radius = 1,25%
+    const color = rgbaToInt(0x18, 0x46, 0xb9, 255);
+    for (let y = seat.locationY - r; y <= seat.locationY + r; y++) {
+      for (let x = seat.locationX - r; x <= seat.locationX + r; x++) {
+        if ((x - seat.locationX) ** 2 + (y - seat.locationY) ** 2 <= r * r) {
+          image.setPixelColor(color, x, y);
+        }
+      }
+    }
+  }
+
+  const outBuffer = await image.getBuffer(JimpMime.png);
+  return `data:image/png;base64,${outBuffer.toString("base64")}`;
 }
 
 async function fetchAccessToken(): Promise<AuthData> {
