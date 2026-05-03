@@ -42,7 +42,11 @@ export async function fetchBookings(year: number, month: number): Promise<Bookin
     }
   );
 
-  return ((await response.json()) as Booking[]).map((result: Booking) => {
+  const data = await response.json();
+  if (!Array.isArray(data)) {
+    throw new Error("Refresh token expired or invalid. Please update it in the extension preferences.");
+  }
+  return (data as Booking[]).map((result: Booking) => {
     const booking = result as Booking;
     booking.date = new Date(result.date);
     return booking;
@@ -76,7 +80,11 @@ export async function fetchCalendar(): Promise<Booking[]> {
     },
   });
 
-  return ((await response.json()) as Booking[]).map((result: Booking) => {
+  const data = await response.json();
+  if (!Array.isArray(data)) {
+    throw new Error("Refresh token expired or invalid. Please update it in the extension preferences.");
+  }
+  return (data as Booking[]).map((result: Booking) => {
     const booking = result as Booking;
     booking.date = new Date(result.date);
     return booking;
@@ -185,6 +193,11 @@ async function fetchAccessToken(): Promise<AuthData> {
       "Content-Type": "application/json",
     },
   });
+
+  if (!response.ok) {
+    await LocalStorage.removeItem("authData");
+    throw new Error("Refresh token expired or invalid. Please update it in the extension preferences.");
+  }
 
   const freshAuthData = (await response.json()) as AuthData;
   await LocalStorage.setItem("authData", JSON.stringify(freshAuthData));

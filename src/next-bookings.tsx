@@ -21,6 +21,7 @@ export default function Command(props: LaunchProps) {
   const preferences = getPreferenceValues<Preferences>();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const { push } = useNavigation();
   const openTodayBooking = (props.launchContext as { openTodayBooking?: boolean } | undefined)?.openTodayBooking;
 
@@ -44,7 +45,10 @@ export default function Command(props: LaunchProps) {
       setIsLoading(false);
     };
 
-    fetchData().catch(console.error);
+    fetchData().catch((err) => {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+      setIsLoading(false);
+    });
   }, []);
 
   useEffect(() => {
@@ -64,6 +68,23 @@ export default function Command(props: LaunchProps) {
 
   if (props.launchType === LaunchType.Background) {
     return;
+  }
+
+  if (error) {
+    return (
+      <List>
+        <List.EmptyView
+          title="Authentication Failed"
+          description={error}
+          icon={Icon.ExclamationMark}
+          actions={
+            <ActionPanel>
+              <Action.OpenInBrowser url={preferences.apiUrl} />
+            </ActionPanel>
+          }
+        />
+      </List>
+    );
   }
 
   if (!bookings || isLoading || bookings.length === 0) {

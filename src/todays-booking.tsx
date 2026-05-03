@@ -1,10 +1,22 @@
-import { launchCommand, LaunchProps, LaunchType, updateCommandMetadata } from "@raycast/api";
+import { launchCommand, LaunchProps, LaunchType, showToast, Toast, updateCommandMetadata } from "@raycast/api";
 import { fetchBookings } from "./api/deskly";
 import { renderSeatName } from "./lib/utils";
 
 export default async function Command(props: LaunchProps) {
   const today = new Date(Date.now());
-  const bookings = await fetchBookings(today.getFullYear(), today.getMonth() + 1);
+
+  let bookings;
+  try {
+    bookings = await fetchBookings(today.getFullYear(), today.getMonth() + 1);
+  } catch (error) {
+    await updateCommandMetadata({ subtitle: "Authentication error – update refresh token" });
+    await showToast({
+      style: Toast.Style.Failure,
+      title: "Authentication Failed",
+      message: error instanceof Error ? error.message : "Please update your refresh token in preferences.",
+    });
+    return;
+  }
 
   const todayBookings = bookings.filter((booking) => booking.date.toDateString() === today.toDateString());
 
