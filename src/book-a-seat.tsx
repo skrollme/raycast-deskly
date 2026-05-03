@@ -2,6 +2,7 @@ import {
   Action,
   ActionPanel,
   Form,
+  Icon,
   launchCommand,
   LaunchProps,
   LaunchType,
@@ -13,6 +14,7 @@ import { useCachedPromise } from "@raycast/utils";
 import { useEffect, useState } from "react";
 import { bookSeat, fetchBookings, fetchFavoriteSeats, fetchInformation } from "./api/deskly";
 import { Booking } from "./lib/types";
+import DesklyEmptyView from "./components/DesklyEmptyView";
 
 function nextWeekday(date: Date): Date {
   const next = new Date(date);
@@ -61,7 +63,7 @@ async function fetchBookingFormData() {
 
 export default function Command(props: LaunchProps) {
   const contextDate = (props.launchContext as { defaultDate?: string } | undefined)?.defaultDate;
-  const { data, isLoading } = useCachedPromise(fetchBookingFormData);
+  const { data, isLoading, error } = useCachedPromise(fetchBookingFormData);
   const [date, setDate] = useState<Date | null | undefined>(contextDate ? new Date(contextDate) : undefined);
   const [dateError, setDateError] = useState<string | undefined>();
   const [seatError, setSeatError] = useState<string | undefined>();
@@ -73,6 +75,26 @@ export default function Command(props: LaunchProps) {
   }, [data]);
 
   const hasNoFavorites = !isLoading && (!data?.favoriteSeats || data.favoriteSeats.length === 0);
+
+  if (error) {
+    return (
+      <DesklyEmptyView
+        title="Error"
+        description={error instanceof Error ? error.message : "An unexpected error occurred."}
+        icon={Icon.ExclamationMark}
+      />
+    );
+  }
+
+  if (hasNoFavorites) {
+    return (
+      <DesklyEmptyView
+        title="No favorite seats"
+        description="You have no favorite seats set. Please add favorites on the desk.ly website before booking."
+        icon={Icon.XMarkCircle}
+      />
+    );
+  }
 
   async function handleSubmit(values: { date: Date | null; seat: string }) {
     let valid = true;
@@ -131,7 +153,9 @@ export default function Command(props: LaunchProps) {
     <Form
       isLoading={isLoading}
       actions={
-        <ActionPanel>{!hasNoFavorites && <Action.SubmitForm title="Book Seat" onSubmit={handleSubmit} />}</ActionPanel>
+        <ActionPanel>
+          <Action.SubmitForm title="Book Seat" onSubmit={handleSubmit} />
+        </ActionPanel>
       }
     >
       <Form.DatePicker
@@ -154,12 +178,6 @@ export default function Command(props: LaunchProps) {
           />
         ))}
       </Form.Dropdown>
-      {hasNoFavorites && (
-        <Form.Description
-          title="No Favorite Seats"
-          text="You have no favorite seats set. Please add favorites on the desk.ly website before booking."
-        />
-      )}
     </Form>
   );
 }

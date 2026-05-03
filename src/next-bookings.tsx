@@ -1,24 +1,13 @@
-import {
-  Action,
-  ActionPanel,
-  getPreferenceValues,
-  Icon,
-  LaunchProps,
-  LaunchType,
-  List,
-  popToRoot,
-  updateCommandMetadata,
-  useNavigation,
-} from "@raycast/api";
+import { Icon, LaunchProps, LaunchType, List, popToRoot, updateCommandMetadata, useNavigation } from "@raycast/api";
 import BookingList from "./components/BookingList";
 import BookingDetail from "./components/BookingDetail";
+import DesklyEmptyView from "./components/DesklyEmptyView";
 import { fetchBookings } from "./api/deskly";
-import { Booking, Preferences } from "./lib/types";
+import { Booking } from "./lib/types";
 import { useEffect, useState } from "react";
 import { renderBookingDate, renderSeatName } from "./lib/utils";
 
 export default function Command(props: LaunchProps) {
-  const preferences = getPreferenceValues<Preferences>();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,36 +60,17 @@ export default function Command(props: LaunchProps) {
   }
 
   if (error) {
-    return (
-      <List>
-        <List.EmptyView
-          title="Authentication Failed"
-          description={error}
-          icon={Icon.ExclamationMark}
-          actions={
-            <ActionPanel>
-              <Action.OpenInBrowser url={preferences.apiUrl} />
-            </ActionPanel>
-          }
-        />
-      </List>
-    );
+    return <DesklyEmptyView title="Error" description={error} icon={Icon.ExclamationMark} />;
   }
 
   if (!bookings || isLoading || bookings.length === 0) {
     return (
-      <List isLoading={isLoading}>
-        <List.EmptyView
-          title={`No bookings found`}
-          description={`Please check the website for more information`}
-          icon={Icon.XMarkCircle}
-          actions={
-            <ActionPanel>
-              <Action.OpenInBrowser url={preferences.apiUrl} />
-            </ActionPanel>
-          }
-        />
-      </List>
+      <DesklyEmptyView
+        title="No bookings found"
+        description="Please check the website for more information"
+        icon={Icon.XMarkCircle}
+        isLoading={isLoading}
+      />
     );
   }
 
