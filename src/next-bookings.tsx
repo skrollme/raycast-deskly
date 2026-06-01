@@ -76,7 +76,7 @@ export default function Command(props: LaunchProps) {
 
   return (
     <List isLoading={isLoading}>
-      <BookingList key="booking-list" bookings={bookings} />
+      <BookingList bookings={bookings} onDeleted={(id) => setBookings((prev) => prev.filter((b) => b.id !== id))} />
     </List>
   );
 }

@@ -1,6 +1,6 @@
 import { Booking, Preferences } from "../lib/types";
 import { Action, ActionPanel, getPreferenceValues, Icon, List } from "@raycast/api";
-import { bookingIcon, renderSeatName } from "../lib/utils";
+import { bookingIcon, confirmDeleteBooking, renderSeatName } from "../lib/utils";
 import BookingDetail from "./BookingDetail";
 
 function dayTitle(date: Date): string {
@@ -18,7 +18,13 @@ function bookingTime(booking: Booking): string {
   return "";
 }
 
-export default function BookingList({ bookings }: { bookings: Booking[] }) {
+export default function BookingList({
+  bookings,
+  onDeleted,
+}: {
+  bookings: Booking[];
+  onDeleted?: (id: string) => void;
+}) {
   const { apiUrl, showLocation, showFloor, showRoom } = getPreferenceValues<Preferences>();
 
   const byDay = new Map<string, Booking[]>();
@@ -48,7 +54,22 @@ export default function BookingList({ bookings }: { bookings: Booking[] }) {
               ]}
               actions={
                 <ActionPanel>
-                  <Action.Push title="Show Details" icon={Icon.Sidebar} target={<BookingDetail booking={booking} />} />
+                  <Action.Push
+                    title="Show Details"
+                    icon={Icon.Sidebar}
+                    target={<BookingDetail booking={booking} onDeleted={() => onDeleted?.(booking.id)} />}
+                  />
+                  <Action.OpenInBrowser
+                    title="Open in Browser"
+                    icon={Icon.Globe}
+                    url={`https://app.desk.ly/de/overview/${booking.date.toISOString().substring(0, 10)}`}
+                  />
+                  <Action
+                    title="Delete Booking"
+                    icon={Icon.Trash}
+                    style={Action.Style.Destructive}
+                    onAction={() => confirmDeleteBooking(booking, () => onDeleted?.(booking.id))}
+                  />
                 </ActionPanel>
               }
             />

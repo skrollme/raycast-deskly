@@ -1,5 +1,6 @@
 import { Booking } from "./types";
-import { Icon, Image } from "@raycast/api";
+import { Alert, confirmAlert, Icon, Image, launchCommand, LaunchType, showToast, Toast } from "@raycast/api";
+import { deleteBooking } from "../api/deskly";
 
 export function renderBookingDate(booking: Booking): string {
   const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -31,6 +32,34 @@ export function bookingIcon(booking: Booking, apiUrl: string): Icon | Image.Imag
   if (booking.userCheckedIn) return Icon.CheckCircle;
   if (booking.profileImage) return { source: apiUrl + booking.profileImage, mask: Image.Mask.Circle };
   return Icon.Person;
+}
+
+export async function confirmDeleteBooking(booking: Booking, onDeleted: () => void): Promise<void> {
+  const dateStr = booking.date.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const confirmed = await confirmAlert({
+    title: "Delete Booking",
+    message: `Delete your booking for ${renderSeatName(booking)} on ${dateStr}?`,
+    primaryAction: { title: "Delete", style: Alert.ActionStyle.Destructive },
+  });
+  if (!confirmed) return;
+
+  const toast = await showToast({ style: Toast.Style.Animated, title: "Deleting booking…" });
+  try {
+    await deleteBooking(booking.id);
+    toast.style = Toast.Style.Success;
+    toast.title = "Booking deleted";
+    onDeleted();
+    await launchCommand({ name: "todays-booking", type: LaunchType.Background });
+  } catch (error) {
+    toast.style = Toast.Style.Failure;
+    toast.title = "Failed to delete booking";
+    toast.message = String(error);
+  }
 }
 
 export function renderSeatName(booking: Booking): string {

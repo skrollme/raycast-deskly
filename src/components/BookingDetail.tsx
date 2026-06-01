@@ -1,48 +1,14 @@
 import { useState, useEffect } from "react";
-import {
-  Action,
-  ActionPanel,
-  confirmAlert,
-  Alert,
-  Detail,
-  Icon,
-  launchCommand,
-  LaunchType,
-  showToast,
-  Toast,
-  useNavigation,
-} from "@raycast/api";
+import { Action, ActionPanel, Detail, Icon, useNavigation } from "@raycast/api";
 import { Booking } from "../lib/types";
-import { renderSeatName } from "../lib/utils";
-import { deleteBooking, fetchRoomPlanImage } from "../api/deskly";
+import { confirmDeleteBooking, renderSeatName } from "../lib/utils";
+import { fetchRoomPlanImage } from "../api/deskly";
 
 export default function BookingDetail({ booking, onDeleted }: { booking: Booking; onDeleted?: () => void }) {
   const seat = booking.seatBooked ?? booking.seat;
   const [roomPlanDataUri, setRoomPlanDataUri] = useState<string | null>(null);
   const [isLoadingImage, setIsLoadingImage] = useState(!!booking.seat?.room);
   const { pop } = useNavigation();
-
-  async function handleDelete() {
-    const confirmed = await confirmAlert({
-      title: "Delete Booking",
-      message: `Delete your booking for ${renderSeatName(booking)} on ${dateStr}?`,
-      primaryAction: { title: "Delete", style: Alert.ActionStyle.Destructive },
-    });
-    if (!confirmed) return;
-
-    const toast = await showToast({ style: Toast.Style.Animated, title: "Deleting booking…" });
-    try {
-      await deleteBooking(booking.id);
-      toast.style = Toast.Style.Success;
-      toast.title = "Booking deleted";
-      onDeleted ? onDeleted() : pop();
-      await launchCommand({ name: "todays-booking", type: LaunchType.Background });
-    } catch (error) {
-      toast.style = Toast.Style.Failure;
-      toast.title = "Failed to delete booking";
-      toast.message = String(error);
-    }
-  }
 
   const dateStr = booking.date.toLocaleDateString("en-US", {
     weekday: "long",
@@ -70,7 +36,17 @@ export default function BookingDetail({ booking, onDeleted }: { booking: Booking
       markdown={markdown}
       actions={
         <ActionPanel>
-          <Action title="Delete Booking" icon={Icon.Trash} style={Action.Style.Destructive} onAction={handleDelete} />
+          <Action.OpenInBrowser
+            title="Open in Browser"
+            icon={Icon.Globe}
+            url={`https://app.desk.ly/de/overview/${booking.date.toISOString().substring(0, 10)}`}
+          />
+          <Action
+            title="Delete Booking"
+            icon={Icon.Trash}
+            style={Action.Style.Destructive}
+            onAction={() => confirmDeleteBooking(booking, onDeleted ?? pop)}
+          />
         </ActionPanel>
       }
       metadata={
