@@ -20,19 +20,30 @@ This is a Raycast extension for managing [desk.ly](https://desk.ly) desk-sharing
 
 ### Commands (entry points)
 
-- [src/next-bookings.tsx](src/next-bookings.tsx) — "Next Bookings" list view command; fetches calendar data and renders upcoming bookings
+- [src/next-bookings.tsx](src/next-bookings.tsx) — "Next Bookings" list view command; fetches current + next month bookings via `fetchBookings`, renders them grouped by day using `BookingList`; subtitle shows the next upcoming booking; supports `openTodayBooking` launch context to push directly into `BookingDetail`
 - [src/todays-booking.tsx](src/todays-booking.tsx) — "Today's Bookings" no-view command; runs every 15 minutes in the background; fetches today's booking via `fetchBookings` and updates the command subtitle with seat name + time, or "No booking today"
+- [src/book-a-seat.tsx](src/book-a-seat.tsx) — "Book a Seat" form command; loads favorite seats and existing bookings to suggest a default date (next weekday after the last booked date); validates date range against `maxBookingDays` from account info; calls `bookSeat()` on submit; supports `defaultDate` launch context
+
+### Components
+
+- [src/components/BookingList.tsx](src/components/BookingList.tsx) — reusable `List` fragment; groups bookings by day into `List.Section`s; each item navigates to `BookingDetail` and supports delete and open-in-browser actions; reads `showLocation`, `showFloor`, `showRoom` preferences for accessories
+- [src/components/BookingDetail.tsx](src/components/BookingDetail.tsx) — `Detail` view for a single booking; fetches and renders the room floor plan image (with the seat highlighted as a blue dot) via `fetchRoomPlanImage`; shows metadata (date, time, seat, location, floor, room); supports delete and open-in-browser actions
+- [src/components/DesklyEmptyView.tsx](src/components/DesklyEmptyView.tsx) — reusable `List.EmptyView` wrapper used for errors and empty states; always shows an "Open in Browser" action
 
 ### API layer
 
 [src/api/deskly.tsx](src/api/deskly.tsx) is the sole HTTP client. Key functions:
 
-- `fetchCalendar()` — primary endpoint used by `next-bookings`; returns next bookings with `seatBooked` field
-- `fetchBookings()` — month-based endpoint using `seat` field instead of `seatBooked`
-- `fetchInformation()` — returns user info; caches result in `LocalStorage`
+- `fetchCalendar()` — homepage calendar endpoint; returns upcoming bookings with `seatBooked` field
+- `fetchBookings(year, month)` — month-based endpoint; uses `seat` field instead of `seatBooked`
+- `fetchFavoriteSeats()` — returns the user's favorite `BookingSeat[]` from `/de/api/user/favorite/seats`
+- `bookSeat(date, seat)` — POSTs to `/de/api/resource-booking` to create a full-day booking (08:00–17:00)
+- `deleteBooking(bookingId)` — DELETEs `/de/api/dayBooking/:id/delete`
+- `fetchRoomPlanImage(roomId, seat)` — fetches the room plan PNG, overlays a blue circle at the seat's `locationX`/`locationY`, and returns a base64 `data:` URI; results are in-memory cached per `roomId:seatId`
+- `fetchInformation()` — returns user info including `accountInformation.maxBookingDays`; caches result in `LocalStorage`
 - `fetchAccessToken()` — exchanges the refresh token for a short-lived access token; caches in `LocalStorage` with expiration tracking; called automatically before every authenticated request
 
-The two endpoints return structurally similar `Booking` objects but use different field names for the booked seat: `fetchCalendar` → `booking.seatBooked`, `fetchBookings` → `booking.seat`. The `renderSeatName()` utility handles both.
+The two booking endpoints return structurally similar `Booking` objects but use different field names for the booked seat: `fetchCalendar` → `booking.seatBooked`, `fetchBookings` → `booking.seat`. The `renderSeatName()` utility handles both.
 
 ### Auth flow
 
@@ -45,19 +56,27 @@ The two endpoints return structurally similar `Booking` objects but use differen
 
 All shared interfaces live in [src/lib/types.tsx](src/lib/types.tsx): `Preferences`, `Booking`, `BookingSeat`, `AuthData`, `Information`.
 
+`Preferences` now includes three display toggles: `showLocation`, `showFloor`, `showRoom`.
+
+`BookingSeat` now includes `room` (room ID for floor plan fetch), `locationX`, and `locationY` (pixel coordinates for seat overlay).
+
+`Information` now includes `accountInformation.maxBookingDays`.
+
 ### Utilities
 
-[src/lib/utils.tsx](src/lib/utils.tsx) has three pure rendering helpers:
+[src/lib/utils.tsx](src/lib/utils.tsx) has rendering and action helpers:
 
-- `renderBookingDate(booking)` — formats date as "Today", "Tomorrow", or weekday + time range
-- `renderSeatName(booking)` — reads from `booking.seat` or `booking.seatBooked`
-- `renderSeatIcon(booking)` — maps `userStatus` ("absent" / "home" / "office") to an icon
+- `renderBookingDate(booking)` — formats date as "Today", "Tomorrow", or weekday + optional time range
+- `renderSeatName(booking)` — reads from `booking.seat` or `booking.seatBooked`; falls back to "Multiple bookings" or "No seat booked"
+- `bookingIcon(booking, apiUrl)` — returns `CheckCircle` if checked in, profile image if available, or `Person` icon
+- `confirmDeleteBooking(booking, onDeleted)` — shows a destructive confirmation alert, calls `deleteBooking()`, then re-triggers the `todays-booking` background command
 
 ### Configuration
 
-The extension declares two Raycast preferences in `package.json`:
+The extension declares preferences in `package.json`:
 
 - `apiUrl` — optional, defaults to `https://app.desk.ly`
 - `refreshToken` — required; obtain from a desk.ly session
+- `showLocation` / `showFloor` / `showRoom` — optional booleans; control which seat metadata columns appear in `BookingList`
 
 Prettier is configured for 120-character line width with double quotes (see [.prettierrc](.prettierrc)).
