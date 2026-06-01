@@ -62,7 +62,7 @@ export default function BookingList({
                   <Action.OpenInBrowser
                     title="Open in Browser"
                     icon={Icon.Globe}
-                    url={`https://app.desk.ly/de/overview/${booking.date.toISOString().substring(0, 10)}`}
+                    url={`${apiUrl}/de/overview/${booking.date.toISOString().substring(0, 10)}`}
                   />
                   <Action
                     title="Delete Booking"

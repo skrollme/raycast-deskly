@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Action, ActionPanel, Detail, Icon, useNavigation } from "@raycast/api";
-import { Booking } from "../lib/types";
+import { Action, ActionPanel, Detail, getPreferenceValues, Icon, useNavigation } from "@raycast/api";
+import { Booking, Preferences } from "../lib/types";
 import { confirmDeleteBooking, renderSeatName } from "../lib/utils";
 import { fetchRoomPlanImage } from "../api/deskly";
 
 export default function BookingDetail({ booking, onDeleted }: { booking: Booking; onDeleted?: () => void }) {
+  const { apiUrl } = getPreferenceValues<Preferences>();
   const seat = booking.seatBooked ?? booking.seat;
   const [roomPlanDataUri, setRoomPlanDataUri] = useState<string | null>(null);
   const [isLoadingImage, setIsLoadingImage] = useState(!!booking.seat?.room);
@@ -39,7 +40,7 @@ export default function BookingDetail({ booking, onDeleted }: { booking: Booking
           <Action.OpenInBrowser
             title="Open in Browser"
             icon={Icon.Globe}
-            url={`https://app.desk.ly/de/overview/${booking.date.toISOString().substring(0, 10)}`}
+            url={`${apiUrl}/de/overview/${booking.date.toISOString().substring(0, 10)}`}
           />
           <Action
             title="Delete Booking"
