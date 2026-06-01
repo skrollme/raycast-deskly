@@ -3,6 +3,8 @@ import { AuthData, Booking, BookingSeat, Information, Preferences } from "../lib
 import fetch from "node-fetch";
 import { Jimp, JimpMime, rgbaToInt } from "jimp";
 
+const roomPlanImageCache = new Map<string, Promise<string | null>>();
+
 export async function fetchInformation(): Promise<Information> {
   const preferences = getPreferenceValues<Preferences>();
 
@@ -147,33 +149,42 @@ export async function deleteBooking(bookingId: string): Promise<void> {
   }
 }
 
-export async function fetchRoomPlanImage(roomId: string, seat: BookingSeat): Promise<string | null> {
-  const preferences = getPreferenceValues<Preferences>();
-  const authData = await fetchAccessToken();
+export function fetchRoomPlanImage(roomId: string, seat: BookingSeat): Promise<string | null> {
+  const cacheKey = `${roomId}:${seat.id}`;
+  const cached = roomPlanImageCache.get(cacheKey);
+  if (cached) return cached;
 
-  const response = await fetch(`${preferences.apiUrl}/de/image/room-plan/${roomId}`, {
-    headers: { Authorization: `Bearer ${authData.token}` },
-  });
+  const promise = (async () => {
+    const preferences = getPreferenceValues<Preferences>();
+    const authData = await fetchAccessToken();
 
-  if (!response.ok) return null;
+    const response = await fetch(`${preferences.apiUrl}/de/image/room-plan/${roomId}`, {
+      headers: { Authorization: `Bearer ${authData.token}` },
+    });
 
-  const buffer = Buffer.from(await response.arrayBuffer());
-  const image = await Jimp.fromBuffer(buffer);
+    if (!response.ok) return null;
 
-  if (seat.locationX != null && seat.locationY != null) {
-    const r = Math.round(image.width * 0.0125); // diameter = 2,5% of width → radius = 1,25%
-    const color = rgbaToInt(0x18, 0x46, 0xb9, 255);
-    for (let y = seat.locationY - r; y <= seat.locationY + r; y++) {
-      for (let x = seat.locationX - r; x <= seat.locationX + r; x++) {
-        if ((x - seat.locationX) ** 2 + (y - seat.locationY) ** 2 <= r * r) {
-          image.setPixelColor(color, x, y);
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const image = await Jimp.fromBuffer(buffer);
+
+    if (seat.locationX != null && seat.locationY != null) {
+      const r = Math.round(image.width * 0.0125); // diameter = 2,5% of width → radius = 1,25%
+      const color = rgbaToInt(0x18, 0x46, 0xb9, 255);
+      for (let y = seat.locationY - r; y <= seat.locationY + r; y++) {
+        for (let x = seat.locationX - r; x <= seat.locationX + r; x++) {
+          if ((x - seat.locationX) ** 2 + (y - seat.locationY) ** 2 <= r * r) {
+            image.setPixelColor(color, x, y);
+          }
         }
       }
     }
-  }
 
-  const outBuffer = await image.getBuffer(JimpMime.png);
-  return `data:image/png;base64,${outBuffer.toString("base64")}`;
+    const outBuffer = await image.getBuffer(JimpMime.png);
+    return `data:image/png;base64,${outBuffer.toString("base64")}`;
+  })();
+
+  roomPlanImageCache.set(cacheKey, promise);
+  return promise;
 }
 
 async function fetchAccessToken(): Promise<AuthData> {
