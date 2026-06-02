@@ -132,6 +132,24 @@ export async function bookSeat(date: Date, seat: BookingSeat): Promise<void> {
   }
 }
 
+export async function checkInBooking(bookingId: string): Promise<void> {
+  const preferences = getPreferenceValues<Preferences>();
+  const authData = await fetchAccessToken();
+
+  const response = await fetch(`${preferences.apiUrl}/de/api/dayBooking/${bookingId}/checkin`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${authData.token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`${response.status} ${response.statusText}: ${body}`);
+  }
+}
+
 export async function deleteBooking(bookingId: string): Promise<void> {
   const preferences = getPreferenceValues<Preferences>();
   const authData = await fetchAccessToken();

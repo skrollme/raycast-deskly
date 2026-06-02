@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react";
-import { Action, ActionPanel, Detail, getPreferenceValues, Icon, useNavigation } from "@raycast/api";
+import { Action, ActionPanel, Detail, getPreferenceValues, Icon, showToast, Toast, useNavigation } from "@raycast/api";
 import { Booking, Preferences } from "../lib/types";
 import { confirmDeleteBooking, renderSeatName } from "../lib/utils";
-import { fetchRoomPlanImage } from "../api/deskly";
+import { checkInBooking, fetchRoomPlanImage } from "../api/deskly";
 
 export default function BookingDetail({ booking, onDeleted }: { booking: Booking; onDeleted?: () => void }) {
   const { apiUrl } = getPreferenceValues<Preferences>();
   const seat = booking.seatBooked ?? booking.seat;
   const [roomPlanDataUri, setRoomPlanDataUri] = useState<string | null>(null);
   const [isLoadingImage, setIsLoadingImage] = useState(!!booking.seat?.room);
+  const [checkedIn, setCheckedIn] = useState(booking.userCheckedIn ?? false);
   const { pop } = useNavigation();
+
+  const isToday = booking.date.toDateString() === new Date().toDateString();
 
   const dateStr = booking.date.toLocaleDateString("en-US", {
     weekday: "long",
@@ -29,7 +32,8 @@ export default function BookingDetail({ booking, onDeleted }: { booking: Booking
   }, [booking.seat?.room]);
 
   const imageMarkdown = roomPlanDataUri ? `\n\n![Floor Plan](${roomPlanDataUri})` : "";
-  const markdown = `# ${renderSeatName(booking)}\n\n${dateStr}${imageMarkdown}`;
+  const checkedInMarkdown = checkedIn ? " | ✔︎ *Booking confirmed*" : "";
+  const markdown = `# ${renderSeatName(booking)}\n\n${dateStr}${checkedInMarkdown}${imageMarkdown}`;
 
   return (
     <Detail
@@ -42,6 +46,25 @@ export default function BookingDetail({ booking, onDeleted }: { booking: Booking
             icon={Icon.Globe}
             url={`${apiUrl}/de/overview/${booking.date.toISOString().substring(0, 10)}`}
           />
+          {isToday && !checkedIn && (
+            <Action
+              title="Check In"
+              icon={Icon.CheckCircle}
+              onAction={async () => {
+                const toast = await showToast({ style: Toast.Style.Animated, title: "Checking in…" });
+                try {
+                  await checkInBooking(booking.id);
+                  setCheckedIn(true);
+                  toast.style = Toast.Style.Success;
+                  toast.title = "Checked in";
+                } catch (error) {
+                  toast.style = Toast.Style.Failure;
+                  toast.title = "Check-in failed";
+                  toast.message = String(error);
+                }
+              }}
+            />
+          )}
           <Action
             title="Delete Booking"
             icon={Icon.Trash}
