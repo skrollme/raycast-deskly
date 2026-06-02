@@ -11,9 +11,9 @@
   "license": "MIT",
   "commands": [
     {
-      "name": "next-bookings",
-      "title": "Next Bookings",
-      "description": "Show my next Bookings",
+      "name": "my-bookings",
+      "title": "My Bookings",
+      "description": "Show my upcomming bookings",
       "mode": "view"
     },
     {
@@ -24,7 +24,7 @@
     },
     {
       "name": "todays-booking",
-      "title": "Today's Bookings",
+      "title": "Today's Booking",
       "description": "Show my today's Booking",
       "mode": "no-view",
       "interval": "15m"

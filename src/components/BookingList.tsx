@@ -33,7 +33,8 @@ export default function BookingList({
   const [checkedInIds, setCheckedInIds] = useState<Set<string>>(new Set());
 
   const isCheckedIn = (booking: Booking) => booking.userCheckedIn || checkedInIds.has(booking.id);
-  const effectiveIcon = (booking: Booking) => (checkedInIds.has(booking.id) ? Icon.CheckCircle : bookingIcon(booking, apiUrl));
+  const effectiveIcon = (booking: Booking) =>
+    checkedInIds.has(booking.id) ? Icon.CheckCircle : bookingIcon(booking, apiUrl);
 
   const byDay = new Map<string, Booking[]>();
   for (const booking of bookings) {

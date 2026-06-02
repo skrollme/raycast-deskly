@@ -32,7 +32,7 @@ export default function BookingDetail({ booking, onDeleted }: { booking: Booking
   }, [booking.seat?.room]);
 
   const imageMarkdown = roomPlanDataUri ? `\n\n![Floor Plan](${roomPlanDataUri})` : "";
-  const checkedInMarkdown = checkedIn ? " | ✔︎ *Booking confirmed*" : "";
+  const checkedInMarkdown = checkedIn ? "\n\n✔︎ *Booking confirmed*" : "";
   const markdown = `# ${renderSeatName(booking)}\n\n${dateStr}${checkedInMarkdown}${imageMarkdown}`;
 
   return (
@@ -56,7 +56,7 @@ export default function BookingDetail({ booking, onDeleted }: { booking: Booking
                   await checkInBooking(booking.id);
                   setCheckedIn(true);
                   toast.style = Toast.Style.Success;
-                  toast.title = "Checked in";
+                  toast.title = "Booking confirmed";
                 } catch (error) {
                   toast.style = Toast.Style.Failure;
                   toast.title = "Check-in failed";
@@ -90,12 +90,11 @@ export default function BookingDetail({ booking, onDeleted }: { booking: Booking
             <>
               <Detail.Metadata.Separator />
               <Detail.Metadata.Label title="Seat" text={seat.name} icon={Icon.Dot} />
+              {seat.roomName && <Detail.Metadata.Label title="Room" text={seat.roomName} icon={Icon.Map} />}
+              {seat.floorName && <Detail.Metadata.Label title="Floor" text={seat.floorName} icon={Icon.ArrowUp} />}
               {seat.locationName && (
                 <Detail.Metadata.Label title="Location" text={seat.locationName} icon={Icon.Building} />
               )}
-              {seat.floorName && <Detail.Metadata.Label title="Floor" text={seat.floorName} icon={Icon.ArrowUp} />}
-              {seat.roomName && <Detail.Metadata.Label title="Room" text={seat.roomName} icon={Icon.Map} />}
-              {seat.number != null && <Detail.Metadata.Label title="Number" text={String(seat.number)} />}
             </>
           )}
         </Detail.Metadata>

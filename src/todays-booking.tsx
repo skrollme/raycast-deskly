@@ -39,6 +39,6 @@ export default async function Command(props: LaunchProps) {
       context: { defaultDate: today.toISOString() },
     });
   } else {
-    await launchCommand({ name: "next-bookings", type: LaunchType.UserInitiated, context: { openTodayBooking: true } });
+    await launchCommand({ name: "my-bookings", type: LaunchType.UserInitiated, context: { openTodayBooking: true } });
   }
 }
