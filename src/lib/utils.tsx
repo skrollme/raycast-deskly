@@ -1,31 +1,18 @@
 import { Booking } from "./types";
 import { Alert, confirmAlert, Icon, Image, launchCommand, LaunchType, showToast, Toast } from "@raycast/api";
 import { deleteBooking } from "../api/deskly";
+import { relativeDay, renderTimeRange } from "./format";
 
 export function renderBookingDate(booking: Booking): string {
-  const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  const today = new Date();
-  const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-
   if (booking === null) {
     return "-";
   }
 
-  let bookingDate = "";
+  const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const bookingDate = relativeDay(booking.date) ?? weekday[booking.date.getDay()];
 
-  if (booking.date.toDateString() == today.toDateString()) {
-    bookingDate = "Today";
-  } else if (booking.date.toDateString() == tomorrow.toDateString()) {
-    bookingDate = "Tomorrow";
-  } else {
-    bookingDate = weekday[booking.date.getDay()];
-  }
-
-  if (booking.from && booking.until) {
-    return `${bookingDate} (${booking.from?.substring(0, 5)} - ${booking.until?.substring(0, 5)})`;
-  }
-
-  return bookingDate;
+  const range = renderTimeRange(booking.from, booking.until);
+  return range ? `${bookingDate} (${range})` : bookingDate;
 }
 
 export function profileIcon(profileImage: string | undefined | null, apiUrl: string): Icon | Image.ImageLike {
@@ -34,11 +21,6 @@ export function profileIcon(profileImage: string | undefined | null, apiUrl: str
     return { source: src, mask: Image.Mask.Circle };
   }
   return Icon.Person;
-}
-
-export function bookingIcon(booking: Booking, apiUrl: string): Icon | Image.ImageLike {
-  if (booking.userCheckedIn) return Icon.CheckCircle;
-  return profileIcon(booking.profileImage, apiUrl);
 }
 
 export async function confirmDeleteBooking(booking: Booking, onDeleted: () => void): Promise<void> {

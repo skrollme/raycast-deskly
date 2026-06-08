@@ -16,20 +16,10 @@ import OfficeList, { OfficeListSection } from "./components/OfficeList";
 import { fetchBookings, fetchInformation } from "./api/deskly";
 import { Booking, Preferences } from "./lib/types";
 import { renderBookingDate, renderSeatName } from "./lib/utils";
+import { isSameDay, relativeDay, renderTimeRange } from "./lib/format";
 
 function dayTitle(date: Date): string {
-  const today = new Date();
-  const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-  if (date.toDateString() === today.toDateString()) return "Today";
-  if (date.toDateString() === tomorrow.toDateString()) return "Tomorrow";
-  return date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-}
-
-function bookingTime(booking: Booking): string | undefined {
-  if (booking.from && booking.until) {
-    return `${booking.from.substring(0, 5)} – ${booking.until.substring(0, 5)}`;
-  }
-  return undefined;
+  return relativeDay(date) ?? date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 }
 
 export default function Command(props: LaunchProps) {
@@ -79,7 +69,7 @@ export default function Command(props: LaunchProps) {
   useEffect(() => {
     if (!openTodayBooking || isLoading) return;
     const today = new Date();
-    const todayBooking = bookings.find((b) => b.date.toDateString() === today.toDateString());
+    const todayBooking = bookings.find((b) => isSameDay(b.date, today));
     if (todayBooking) push(<BookingDetail booking={todayBooking} onDeleted={popToRoot} />);
   }, [isLoading]);
 
@@ -121,7 +111,7 @@ export default function Command(props: LaunchProps) {
       title: [information?.user.firstName, information?.user.lastName].filter(Boolean).join(" "),
       subtitle: renderSeatName(booking),
       isCheckedIn: isCheckedIn(booking),
-      timeRange: bookingTime(booking),
+      timeRange: renderTimeRange(booking.from, booking.until),
       location: showLocation ? booking.seatBooked?.locationName ?? booking.seat?.locationName : undefined,
       floor: showFloor ? booking.seatBooked?.floorName ?? booking.seat?.floorName : undefined,
       room: showRoom ? booking.seatBooked?.roomName ?? booking.seat?.roomName : undefined,

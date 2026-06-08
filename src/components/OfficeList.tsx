@@ -3,6 +3,7 @@ import BookingDetail from "./BookingDetail";
 import { checkInBooking } from "../api/deskly";
 import { Booking, Preferences } from "../lib/types";
 import { confirmDeleteBooking, profileIcon } from "../lib/utils";
+import { isSameDay } from "../lib/format";
 
 export interface OfficeListItem {
   key: string;
@@ -24,8 +25,6 @@ export interface OfficeListSection {
   title: string;
   items: OfficeListItem[];
 }
-
-const today = new Date();
 
 export default function OfficeList({ sections }: { sections: OfficeListSection[] }) {
   const { apiUrl } = getPreferenceValues<Preferences>();
@@ -57,7 +56,7 @@ export default function OfficeList({ sections }: { sections: OfficeListSection[]
                         icon={Icon.Sidebar}
                         target={<BookingDetail booking={booking} onDeleted={() => item.onDeleted?.(booking.id)} />}
                       />
-                      {booking.date.toDateString() === today.toDateString() && !item.isCheckedIn && (
+                      {isSameDay(booking.date, new Date()) && !item.isCheckedIn && (
                         <Action
                           title="Check In"
                           icon={Icon.CheckCircle}

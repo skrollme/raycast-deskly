@@ -56,8 +56,6 @@ async function fetchBookingFormData() {
   const lastBookedDate = new Date(relevantBookings.length > 0 ? relevantBookings[0].date : today);
   lastBookedDate.setHours(0, 0, 0, 0);
 
-  console.log(lastBookedDate);
-
   return { favoriteSeats, defaultDate: nextWeekday(lastBookedDate), maxDays };
 }
 

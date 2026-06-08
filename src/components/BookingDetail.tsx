@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Action, ActionPanel, Detail, getPreferenceValues, Icon, showToast, Toast, useNavigation } from "@raycast/api";
 import { Booking, Preferences } from "../lib/types";
 import { confirmDeleteBooking } from "../lib/utils";
+import { isSameDay, renderTimeRange } from "../lib/format";
 import { checkInBooking, fetchRoomPlanImage } from "../api/deskly";
 
 export default function BookingDetail({ booking, onDeleted }: { booking: Booking; onDeleted?: () => void }) {
@@ -12,7 +13,7 @@ export default function BookingDetail({ booking, onDeleted }: { booking: Booking
   const [checkedIn, setCheckedIn] = useState(booking.userCheckedIn ?? false);
   const { pop } = useNavigation();
 
-  const isToday = booking.date.toDateString() === new Date().toDateString();
+  const isToday = isSameDay(booking.date, new Date());
 
   const dateStr = booking.date.toLocaleDateString("en-US", {
     weekday: "long",
@@ -20,6 +21,8 @@ export default function BookingDetail({ booking, onDeleted }: { booking: Booking
     month: "long",
     day: "numeric",
   });
+
+  const timeRange = renderTimeRange(booking.from, booking.until);
 
   useEffect(() => {
     const seatObj = booking.seat;
@@ -75,13 +78,7 @@ export default function BookingDetail({ booking, onDeleted }: { booking: Booking
         <Detail.Metadata>
           {checkedIn && <Detail.Metadata.Label title="" text="Checked in" icon={Icon.CheckCircle} />}
           <Detail.Metadata.Label title="Date" text={dateStr} icon={Icon.Calendar} />
-          {booking.from && booking.until && (
-            <Detail.Metadata.Label
-              title="Time"
-              text={`${booking.from.substring(0, 5)} – ${booking.until.substring(0, 5)}`}
-              icon={Icon.Clock}
-            />
-          )}
+          {timeRange && <Detail.Metadata.Label title="Time" text={timeRange} icon={Icon.Clock} />}
           {booking.multipleBookings && (
             <Detail.Metadata.Label title="Multiple Bookings" icon={Icon.Ellipsis} text="Yes" />
           )}

@@ -1,16 +1,27 @@
 import { getPreferenceValues, LocalStorage } from "@raycast/api";
 import { AuthData, Booking, BookingSeat, Information, Preferences, PresentPerson } from "../lib/types";
+import { pad2, toISODate } from "../lib/format";
 import fetch from "node-fetch";
 import { Jimp, JimpMime, rgbaToInt } from "jimp";
 
 const roomPlanImageCache = new Map<string, Promise<string | null>>();
+
+const INFORMATION_TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
+
+interface CachedInformation {
+  information: Information;
+  fetchedAt: number;
+}
 
 export async function fetchInformation(): Promise<Information> {
   const preferences = getPreferenceValues<Preferences>();
 
   const cached = await LocalStorage.getItem<string>("information");
   if (cached) {
-    return JSON.parse(cached) as Information;
+    const parsed = JSON.parse(cached) as CachedInformation;
+    if (parsed.fetchedAt && parsed.fetchedAt + INFORMATION_TTL_MS > new Date().getTime()) {
+      return parsed.information;
+    }
   }
 
   const authData = await fetchAccessToken();
@@ -22,7 +33,7 @@ export async function fetchInformation(): Promise<Information> {
   });
 
   const information = (await response.json()) as Information;
-  await LocalStorage.setItem("information", JSON.stringify(information));
+  await LocalStorage.setItem("information", JSON.stringify({ information, fetchedAt: new Date().getTime() }));
   return information;
 }
 
@@ -31,10 +42,8 @@ export async function fetchBookings(year: number, month: number): Promise<Bookin
   const authData = await fetchAccessToken();
   const information = await fetchInformation();
 
-  const zeroPad = (num: number, places: number) => String(num).padStart(places, "0");
-
   const response = await fetch(
-    preferences.apiUrl + `/en/api/dayBookings/user/${information.user.id}/year/${year}/month/${zeroPad(month, 2)}`,
+    preferences.apiUrl + `/en/api/dayBookings/user/${information.user.id}/year/${year}/month/${pad2(month)}`,
     {
       method: "GET",
       headers: {
@@ -48,9 +57,8 @@ export async function fetchBookings(year: number, month: number): Promise<Bookin
   if (!Array.isArray(data)) {
     throw new Error("Refresh token expired or invalid. Please update it in the extension preferences.");
   }
-  return (data as Booking[]).map((result: Booking) => {
-    const booking = result as Booking;
-    booking.date = new Date(result.date);
+  return (data as Booking[]).map((booking) => {
+    booking.date = new Date(booking.date);
     return booking;
   });
 }
@@ -70,36 +78,12 @@ export async function fetchFavoriteSeats(): Promise<BookingSeat[]> {
   return (await response.json()) as BookingSeat[];
 }
 
-export async function fetchCalendar(): Promise<Booking[]> {
-  const preferences = getPreferenceValues<Preferences>();
-  const authData = await fetchAccessToken();
-
-  const response = await fetch(preferences.apiUrl + `/en/api/homepage/calendar`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${authData.token}`,
-    },
-  });
-
-  const data = await response.json();
-  if (!Array.isArray(data)) {
-    throw new Error("Refresh token expired or invalid. Please update it in the extension preferences.");
-  }
-  return (data as Booking[]).map((result: Booking) => {
-    const booking = result as Booking;
-    booking.date = new Date(result.date);
-    return booking;
-  });
-}
-
 export async function bookSeat(date: Date, seat: BookingSeat): Promise<void> {
   const preferences = getPreferenceValues<Preferences>();
   const authData = await fetchAccessToken();
   const information = await fetchInformation();
 
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const datePrefix = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  const datePrefix = toISODate(date);
 
   const response = await fetch(preferences.apiUrl + "/en/api/resource-booking", {
     method: "POST",

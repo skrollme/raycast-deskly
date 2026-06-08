@@ -1,6 +1,7 @@
 import { launchCommand, LaunchProps, LaunchType, showToast, Toast, updateCommandMetadata } from "@raycast/api";
 import { fetchBookings } from "./api/deskly";
 import { renderSeatName } from "./lib/utils";
+import { isSameDay } from "./lib/format";
 
 export default async function Command(props: LaunchProps) {
   const today = new Date(Date.now());
@@ -18,7 +19,7 @@ export default async function Command(props: LaunchProps) {
     return;
   }
 
-  const todayBookings = bookings.filter((booking) => booking.date.toDateString() === today.toDateString());
+  const todayBookings = bookings.filter((booking) => isSameDay(booking.date, today));
 
   if (todayBookings.length > 1) {
     await updateCommandMetadata({ subtitle: "Multiple bookings for this day" });

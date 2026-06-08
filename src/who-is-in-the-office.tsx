@@ -4,6 +4,7 @@ import { useState } from "react";
 import { fetchInformation, fetchPresentResources } from "./api/deskly";
 import { PresentPerson } from "./lib/types";
 import OfficeList, { OfficeListSection } from "./components/OfficeList";
+import { renderTimeRange, toISODate } from "./lib/format";
 
 export default function Command() {
   const [selectedLocation, setSelectedLocation] = useState<string | undefined>(undefined);
@@ -13,9 +14,7 @@ export default function Command() {
   const primaryLocation = information?.user?.primaryRoom?.location ?? undefined;
   const effectiveLocation = selectedLocation ?? primaryLocation;
 
-  const today = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const dateStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+  const dateStr = toISODate(new Date());
 
   const { data: presentPeople, isLoading: peopleLoading } = useCachedPromise(
     fetchPresentResources,
@@ -47,10 +46,7 @@ export default function Command() {
           title: `${person.firstName} ${person.lastName}`,
           subtitle: booking?.resource.name ?? "",
           isCheckedIn: person.isCheckedIn,
-          timeRange:
-            booking?.from && booking?.until
-              ? `${booking.from.substring(0, 5)} – ${booking.until.substring(0, 5)}`
-              : undefined,
+          timeRange: renderTimeRange(booking?.from ?? null, booking?.until ?? null),
         };
       }),
     };
