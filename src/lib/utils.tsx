@@ -28,10 +28,17 @@ export function renderBookingDate(booking: Booking): string {
   return bookingDate;
 }
 
+export function profileIcon(profileImage: string | undefined | null, apiUrl: string): Icon | Image.ImageLike {
+  if (profileImage) {
+    const src = profileImage.startsWith("http") ? profileImage : apiUrl + profileImage;
+    return { source: src, mask: Image.Mask.Circle };
+  }
+  return Icon.Person;
+}
+
 export function bookingIcon(booking: Booking, apiUrl: string): Icon | Image.ImageLike {
   if (booking.userCheckedIn) return Icon.CheckCircle;
-  if (booking.profileImage) return { source: apiUrl + booking.profileImage, mask: Image.Mask.Circle };
-  return Icon.Person;
+  return profileIcon(booking.profileImage, apiUrl);
 }
 
 export async function confirmDeleteBooking(booking: Booking, onDeleted: () => void): Promise<void> {

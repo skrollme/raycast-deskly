@@ -1,8 +1,9 @@
-import { getPreferenceValues, Icon, Image, List } from "@raycast/api";
+import { getPreferenceValues, Icon, List } from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
 import { useState } from "react";
 import { fetchInformation, fetchPresentResources } from "./api/deskly";
 import { Preferences, PresentPerson } from "./lib/types";
+import { profileIcon } from "./lib/utils";
 
 export default function Command() {
   const preferences = getPreferenceValues<Preferences>();
@@ -34,11 +35,6 @@ export default function Command() {
     byRoom.set(key, group);
   }
 
-  function personIcon(person: PresentPerson): Icon | Image.ImageLike {
-    if (person.profileImage) return { source: preferences.apiUrl + person.profileImage, mask: Image.Mask.Circle };
-    return Icon.Person;
-  }
-
   return (
     <List
       isLoading={infoLoading || peopleLoading}
@@ -62,7 +58,7 @@ export default function Command() {
             {people.map((person) => (
               <List.Item
                 key={person.userId}
-                icon={personIcon(person)}
+                icon={profileIcon(person.profileImage, preferences.apiUrl)}
                 title={`${person.firstName} ${person.lastName}`}
                 subtitle={person.dayBookings[0]?.resource.name}
                 accessories={[
