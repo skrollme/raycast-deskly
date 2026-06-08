@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Action, ActionPanel, Detail, getPreferenceValues, Icon, showToast, Toast, useNavigation } from "@raycast/api";
 import { Booking, Preferences } from "../lib/types";
-import { confirmDeleteBooking, renderSeatName } from "../lib/utils";
+import { confirmDeleteBooking } from "../lib/utils";
 import { checkInBooking, fetchRoomPlanImage } from "../api/deskly";
 
 export default function BookingDetail({ booking, onDeleted }: { booking: Booking; onDeleted?: () => void }) {
@@ -32,12 +32,11 @@ export default function BookingDetail({ booking, onDeleted }: { booking: Booking
   }, [booking.seat?.room]);
 
   const imageMarkdown = roomPlanDataUri ? `\n\n![Floor Plan](${roomPlanDataUri})` : "";
-  const markdown = `# ${renderSeatName(booking)}\n\n${dateStr}${imageMarkdown}`;
 
   return (
     <Detail
       isLoading={isLoadingImage}
-      markdown={markdown}
+      markdown={imageMarkdown}
       actions={
         <ActionPanel>
           <Action.OpenInBrowser
