@@ -1,12 +1,11 @@
-import { getPreferenceValues, Icon, List } from "@raycast/api";
+import { List } from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
 import { useState } from "react";
 import { fetchInformation, fetchPresentResources } from "./api/deskly";
-import { Preferences, PresentPerson } from "./lib/types";
-import { profileIcon } from "./lib/utils";
+import { PresentPerson } from "./lib/types";
+import OfficeList, { OfficeListSection } from "./components/OfficeList";
 
 export default function Command() {
-  const preferences = getPreferenceValues<Preferences>();
   const [selectedLocation, setSelectedLocation] = useState<string | undefined>(undefined);
 
   const { data: information, isLoading: infoLoading } = useCachedPromise(fetchInformation);
@@ -35,6 +34,28 @@ export default function Command() {
     byRoom.set(key, group);
   }
 
+  const sections: OfficeListSection[] = [...byRoom.entries()].map(([key, people]) => {
+    const resource = people[0]?.dayBookings[0]?.resource;
+    return {
+      key,
+      title: resource?.floorName ? `${resource.floorName} · ${resource.roomName}` : resource?.roomName ?? "Unknown",
+      items: people.map((person) => {
+        const booking = person.dayBookings[0];
+        return {
+          key: person.userId,
+          profileImage: person.profileImage,
+          title: `${person.firstName} ${person.lastName}`,
+          subtitle: booking?.resource.name ?? "",
+          isCheckedIn: person.isCheckedIn,
+          timeRange:
+            booking?.from && booking?.until
+              ? `${booking.from.substring(0, 5)} – ${booking.until.substring(0, 5)}`
+              : undefined,
+        };
+      }),
+    };
+  });
+
   return (
     <List
       isLoading={infoLoading || peopleLoading}
@@ -48,36 +69,7 @@ export default function Command() {
         ) : undefined
       }
     >
-      {[...byRoom.entries()].map(([key, people]) => {
-        const resource = people[0]?.dayBookings[0]?.resource;
-        const sectionTitle = resource?.floorName
-          ? `${resource.floorName} · ${resource.roomName}`
-          : resource?.roomName ?? "Unknown";
-        return (
-          <List.Section key={key} title={sectionTitle}>
-            {people.map((person) => (
-              <List.Item
-                key={person.userId}
-                icon={profileIcon(person.profileImage, preferences.apiUrl)}
-                title={`${person.firstName} ${person.lastName}`}
-                subtitle={person.dayBookings[0]?.resource.name}
-                accessories={[
-                  ...(person.isCheckedIn ? [{ icon: Icon.CheckCircle }] : []),
-                  {
-                    text:
-                      person.dayBookings[0]?.from && person.dayBookings[0]?.until
-                        ? `${person.dayBookings[0].from.substring(0, 5)} – ${person.dayBookings[0].until.substring(
-                            0,
-                            5
-                          )}`
-                        : undefined,
-                  },
-                ]}
-              />
-            ))}
-          </List.Section>
-        );
-      })}
+      <OfficeList sections={sections} />
     </List>
   );
 }

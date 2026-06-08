@@ -1,17 +1,45 @@
-import { Icon, LaunchProps, LaunchType, List, popToRoot, updateCommandMetadata, useNavigation } from "@raycast/api";
-import BookingList from "./components/BookingList";
+import {
+  getPreferenceValues,
+  Icon,
+  LaunchProps,
+  LaunchType,
+  List,
+  popToRoot,
+  updateCommandMetadata,
+  useNavigation,
+} from "@raycast/api";
+import { useCachedPromise } from "@raycast/utils";
+import { useEffect, useState } from "react";
 import BookingDetail from "./components/BookingDetail";
 import DesklyEmptyView from "./components/DesklyEmptyView";
-import { fetchBookings } from "./api/deskly";
-import { Booking } from "./lib/types";
-import { useEffect, useState } from "react";
+import OfficeList, { OfficeListSection } from "./components/OfficeList";
+import { fetchBookings, fetchInformation } from "./api/deskly";
+import { Booking, Preferences } from "./lib/types";
 import { renderBookingDate, renderSeatName } from "./lib/utils";
 
+function dayTitle(date: Date): string {
+  const today = new Date();
+  const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+  if (date.toDateString() === today.toDateString()) return "Today";
+  if (date.toDateString() === tomorrow.toDateString()) return "Tomorrow";
+  return date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+}
+
+function bookingTime(booking: Booking): string | undefined {
+  if (booking.from && booking.until) {
+    return `${booking.from.substring(0, 5)} – ${booking.until.substring(0, 5)}`;
+  }
+  return undefined;
+}
+
 export default function Command(props: LaunchProps) {
+  const { showLocation, showFloor, showRoom } = getPreferenceValues<Preferences>();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [checkedInIds, setCheckedInIds] = useState<Set<string>>(new Set());
   const { push } = useNavigation();
+  const { data: information } = useCachedPromise(fetchInformation);
   const openTodayBooking = (props.launchContext as { openTodayBooking?: boolean } | undefined)?.openTodayBooking;
 
   useEffect(() => {
@@ -74,9 +102,38 @@ export default function Command(props: LaunchProps) {
     );
   }
 
+  const isCheckedIn = (booking: Booking) => booking.userCheckedIn || checkedInIds.has(booking.id);
+
+  const byDay = new Map<string, Booking[]>();
+  for (const booking of bookings) {
+    const key = booking.date.toDateString();
+    const group = byDay.get(key) ?? [];
+    group.push(booking);
+    byDay.set(key, group);
+  }
+
+  const sections: OfficeListSection[] = [...byDay.entries()].map(([, dayBookings]) => ({
+    key: dayBookings[0].date.toDateString(),
+    title: dayTitle(dayBookings[0].date),
+    items: dayBookings.map((booking) => ({
+      key: booking.date.toDateString() + booking.seat?.id,
+      profileImage: booking.profileImage,
+      title: [information?.user.firstName, information?.user.lastName].filter(Boolean).join(" "),
+      subtitle: renderSeatName(booking),
+      isCheckedIn: isCheckedIn(booking),
+      timeRange: bookingTime(booking),
+      location: showLocation ? booking.seatBooked?.locationName ?? booking.seat?.locationName : undefined,
+      floor: showFloor ? booking.seatBooked?.floorName ?? booking.seat?.floorName : undefined,
+      room: showRoom ? booking.seatBooked?.roomName ?? booking.seat?.roomName : undefined,
+      booking,
+      onCheckedIn: (id) => setCheckedInIds((prev) => new Set([...prev, id])),
+      onDeleted: (id) => setBookings((prev) => prev.filter((b) => b.id !== id)),
+    })),
+  }));
+
   return (
     <List isLoading={isLoading}>
-      <BookingList bookings={bookings} onDeleted={(id) => setBookings((prev) => prev.filter((b) => b.id !== id))} />
+      <OfficeList sections={sections} />
     </List>
   );
 }
