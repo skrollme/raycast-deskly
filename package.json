@@ -28,6 +28,12 @@
       "description": "Show my today's Booking",
       "mode": "no-view",
       "interval": "15m"
+    },
+    {
+      "name": "who-is-in-the-office",
+      "title": "Who Is in the Office",
+      "description": "See who is in the office today",
+      "mode": "view"
     }
   ],
   "preferences": [

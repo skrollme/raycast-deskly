@@ -38,14 +38,57 @@ export interface AuthData {
   refreshTokenExpiration: number;
 }
 
+export interface Location {
+  id: string;
+  name: string;
+}
+
+export interface PresentResource {
+  id: string;
+  number: number | null;
+  name: string;
+  floorName: string;
+  locationName: string;
+  locationId: string;
+  room: string;
+  roomName: string;
+}
+
+export interface PresentBooking {
+  id: string;
+  type: string;
+  resource: PresentResource;
+  date: string;
+  from: string;
+  until: string;
+}
+
+export interface PresentPerson {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  initials: string;
+  profileImage: string | null;
+  dayBookings: PresentBooking[];
+  isCheckedIn: boolean;
+}
+
 export interface Information {
   user: {
     id: string | null;
     email: string | null;
     firstName: string | null;
     lastName: string | null;
+    primaryRoom: {
+      id: string | null;
+      name: string | null;
+      floor: string | null;
+      location: string | null;
+    };
   };
   accountInformation: {
     maxBookingDays: number | null;
   };
+  availableLocations: Location[];
 }

@@ -1,5 +1,5 @@
 import { getPreferenceValues, LocalStorage } from "@raycast/api";
-import { AuthData, Booking, BookingSeat, Information, Preferences } from "../lib/types";
+import { AuthData, Booking, BookingSeat, Information, Preferences, PresentPerson } from "../lib/types";
 import fetch from "node-fetch";
 import { Jimp, JimpMime, rgbaToInt } from "jimp";
 
@@ -14,7 +14,7 @@ export async function fetchInformation(): Promise<Information> {
   }
 
   const authData = await fetchAccessToken();
-  const response = await fetch(preferences.apiUrl + "/de/api/information", {
+  const response = await fetch(preferences.apiUrl + "/en/api/information", {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${authData.token}`,
@@ -34,7 +34,7 @@ export async function fetchBookings(year: number, month: number): Promise<Bookin
   const zeroPad = (num: number, places: number) => String(num).padStart(places, "0");
 
   const response = await fetch(
-    preferences.apiUrl + `/de/api/dayBookings/user/${information.user.id}/year/${year}/month/${zeroPad(month, 2)}`,
+    preferences.apiUrl + `/en/api/dayBookings/user/${information.user.id}/year/${year}/month/${zeroPad(month, 2)}`,
     {
       method: "GET",
       headers: {
@@ -59,7 +59,7 @@ export async function fetchFavoriteSeats(): Promise<BookingSeat[]> {
   const preferences = getPreferenceValues<Preferences>();
   const authData = await fetchAccessToken();
 
-  const response = await fetch(preferences.apiUrl + "/de/api/user/favorite/seats", {
+  const response = await fetch(preferences.apiUrl + "/en/api/user/favorite/seats", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -74,7 +74,7 @@ export async function fetchCalendar(): Promise<Booking[]> {
   const preferences = getPreferenceValues<Preferences>();
   const authData = await fetchAccessToken();
 
-  const response = await fetch(preferences.apiUrl + `/de/api/homepage/calendar`, {
+  const response = await fetch(preferences.apiUrl + `/en/api/homepage/calendar`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -101,7 +101,7 @@ export async function bookSeat(date: Date, seat: BookingSeat): Promise<void> {
   const pad = (n: number) => String(n).padStart(2, "0");
   const datePrefix = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 
-  const response = await fetch(preferences.apiUrl + "/de/api/resource-booking", {
+  const response = await fetch(preferences.apiUrl + "/en/api/resource-booking", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -132,11 +132,30 @@ export async function bookSeat(date: Date, seat: BookingSeat): Promise<void> {
   }
 }
 
+export async function fetchPresentResources(locationId: string, date: string): Promise<PresentPerson[]> {
+  const preferences = getPreferenceValues<Preferences>();
+  const authData = await fetchAccessToken();
+
+  const response = await fetch(`${preferences.apiUrl}/en/api/resource/present/${locationId}?date=${date}`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${authData.token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`${response.status} ${response.statusText}: ${body}`);
+  }
+
+  return (await response.json()) as PresentPerson[];
+}
+
 export async function checkInBooking(bookingId: string): Promise<void> {
   const preferences = getPreferenceValues<Preferences>();
   const authData = await fetchAccessToken();
 
-  const response = await fetch(`${preferences.apiUrl}/de/api/dayBooking/${bookingId}/checkin`, {
+  const response = await fetch(`${preferences.apiUrl}/en/api/dayBooking/${bookingId}/checkin`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -154,7 +173,7 @@ export async function deleteBooking(bookingId: string): Promise<void> {
   const preferences = getPreferenceValues<Preferences>();
   const authData = await fetchAccessToken();
 
-  const response = await fetch(preferences.apiUrl + `/de/api/dayBooking/${bookingId}/delete`, {
+  const response = await fetch(preferences.apiUrl + `/en/api/dayBooking/${bookingId}/delete`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${authData.token}`,
@@ -215,7 +234,7 @@ async function fetchAccessToken(): Promise<AuthData> {
     return authData;
   }
 
-  const response = await fetch(preferences.apiUrl + "/de/api/authorize/refreshToken", {
+  const response = await fetch(preferences.apiUrl + "/en/api/authorize/refreshToken", {
     method: "POST",
     body: JSON.stringify({ refreshToken: preferences.refreshToken }),
     headers: {

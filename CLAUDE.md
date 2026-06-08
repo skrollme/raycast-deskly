@@ -80,3 +80,11 @@ The extension declares preferences in `package.json`:
 - `showLocation` / `showFloor` / `showRoom` — optional booleans; control which seat metadata columns appear in `BookingList`
 
 Prettier is configured for 120-character line width with double quotes (see [.prettierrc](.prettierrc)).
+
+## Documentation
+
+Use context7 (via the `find-docs` skill) to look up Raycast API docs. Invoke it with `/find-docs` and pass a query like `"Raycast List.Dropdown props"`. The library IDs to prefer:
+
+- `/llmstxt/developers_raycast_llms-full_txt` — most code snippets (4126), high reputation
+- `/raycast/extensions` — largest snippet set (15307), includes real extension examples
+- `/websites/developers_raycast` — official API reference
