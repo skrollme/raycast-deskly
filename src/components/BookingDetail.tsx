@@ -32,8 +32,7 @@ export default function BookingDetail({ booking, onDeleted }: { booking: Booking
   }, [booking.seat?.room]);
 
   const imageMarkdown = roomPlanDataUri ? `\n\n![Floor Plan](${roomPlanDataUri})` : "";
-  const checkedInMarkdown = checkedIn ? "\n\n✔︎ *Booking confirmed*" : "";
-  const markdown = `# ${renderSeatName(booking)}\n\n${dateStr}${checkedInMarkdown}${imageMarkdown}`;
+  const markdown = `# ${renderSeatName(booking)}\n\n${dateStr}${imageMarkdown}`;
 
   return (
     <Detail
@@ -75,6 +74,7 @@ export default function BookingDetail({ booking, onDeleted }: { booking: Booking
       }
       metadata={
         <Detail.Metadata>
+          {checkedIn && <Detail.Metadata.Label title="" text="Checked in" icon={Icon.CheckCircle} />}
           <Detail.Metadata.Label title="Date" text={dateStr} icon={Icon.Calendar} />
           {booking.from && booking.until && (
             <Detail.Metadata.Label

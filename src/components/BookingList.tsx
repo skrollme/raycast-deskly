@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Booking, Preferences } from "../lib/types";
 import { Action, ActionPanel, getPreferenceValues, Icon, List, showToast, Toast } from "@raycast/api";
-import { bookingIcon, confirmDeleteBooking, renderSeatName } from "../lib/utils";
-import { checkInBooking } from "../api/deskly";
+import { useCachedPromise } from "@raycast/utils";
+import { confirmDeleteBooking, profileIcon, renderSeatName } from "../lib/utils";
+import { checkInBooking, fetchInformation } from "../api/deskly";
 import BookingDetail from "./BookingDetail";
 
 function dayTitle(date: Date): string {
@@ -31,10 +32,9 @@ export default function BookingList({
 }) {
   const { apiUrl, showLocation, showFloor, showRoom } = getPreferenceValues<Preferences>();
   const [checkedInIds, setCheckedInIds] = useState<Set<string>>(new Set());
+  const { data: information } = useCachedPromise(fetchInformation);
 
   const isCheckedIn = (booking: Booking) => booking.userCheckedIn || checkedInIds.has(booking.id);
-  const effectiveIcon = (booking: Booking) =>
-    checkedInIds.has(booking.id) ? Icon.CheckCircle : bookingIcon(booking, apiUrl);
 
   const byDay = new Map<string, Booking[]>();
   for (const booking of bookings) {
@@ -51,10 +51,12 @@ export default function BookingList({
           {dayBookings.map((booking) => (
             <List.Item
               key={booking.date.toDateString() + booking.seat?.id}
-              icon={effectiveIcon(booking)}
-              title={renderSeatName(booking)}
-              subtitle={bookingTime(booking)}
+              icon={profileIcon(booking.profileImage, apiUrl)}
+              title={[information?.user.firstName, information?.user.lastName].filter(Boolean).join(" ")}
+              subtitle={renderSeatName(booking)}
               accessories={[
+                ...(isCheckedIn(booking) ? [{ icon: Icon.CheckCircle }] : []),
+                { text: bookingTime(booking) },
                 ...(showLocation ? [{ text: booking.seatBooked?.locationName ?? booking.seat?.locationName }] : []),
                 ...(showFloor
                   ? [{ text: booking.seatBooked?.floorName ?? booking.seat?.floorName, icon: Icon.ArrowUp }]
