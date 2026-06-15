@@ -10,15 +10,15 @@ Manage your [desk.ly](https://desk.ly) desk-sharing bookings directly from Rayca
 
 Displays a list of your upcoming desk.ly reservations grouped by day. Each entry shows your name, the seat, and optionally the location, floor, and room (configurable in preferences). Open any booking to see a room floor plan with your seat highlighted. You can delete bookings directly from the list or the detail view. You can also "check-in" your booking from the list or the booking-view.
 
-### Book a Seat
+### Book Seat
 
 Opens a form to create a new booking from your saved favorite seats. The date is pre-filled with the next bookable weekday after your most recent reservation, based on your weekday preferences. You can adjust the date, seat, and time range (Full Day, Morning, Afternoon, or a custom HH:MM interval). The booking window is capped by your account's maximum advance booking limit.
 
 ### Today's Booking
 
-A background command that runs every 15 minutes and keeps its subtitle up to date with your current-day booking (seat name, floor, and room), or "No booking today" when nothing is scheduled. When launched manually it opens today's booking detail view, or jumps straight to **Book a Seat** if you have no booking yet.
+A background command that runs every 15 minutes and keeps its subtitle up to date with your current-day booking (seat name, floor, and room), or "No booking today" when nothing is scheduled. When launched manually it opens today's booking detail view, or jumps straight to **Book Seat** if you have no booking yet.
 
-### Who Is in the Office
+### Who Is in Office
 
 Shows a list of colleagues who are booked in the office today, grouped by floor and room. Use the location dropdown to switch between office locations. Your own booking includes a **Check In** action and the option to delete the booking.
 

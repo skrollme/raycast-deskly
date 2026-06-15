@@ -18,7 +18,7 @@
     },
     {
       "name": "book-a-seat",
-      "title": "Book a Seat",
+      "title": "Book Seat",
       "description": "Book a desk.ly seat",
       "mode": "view",
       "preferences": [
@@ -112,13 +112,13 @@
     {
       "name": "todays-booking",
       "title": "Today's Booking",
-      "description": "Show my today's Booking",
+      "description": "Show today's booking",
       "mode": "no-view",
       "interval": "15m"
     },
     {
       "name": "who-is-in-the-office",
-      "title": "Who Is in the Office",
+      "title": "Who Is in Office",
       "description": "See who is in the office today",
       "mode": "view"
     }
@@ -127,7 +127,7 @@
     {
       "name": "apiUrl",
       "type": "textfield",
-      "required": false,
+      "required": true,
       "default": "https://app.desk.ly",
       "title": "API URL",
       "description": "API URL of your desk.ly instance"
