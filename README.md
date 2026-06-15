@@ -6,17 +6,21 @@ Manage your [desk.ly](https://desk.ly) desk-sharing bookings directly from Rayca
 
 ## Commands
 
-### Next Bookings
+### My Bookings
 
-Displays a list of your upcoming desk.ly reservations. Each booking shows the seat name, date, time range, and optionally the location, floor, and room (configurable in preferences). You can view booking details and delete existing bookings directly from the list.
+Displays a list of your upcoming desk.ly reservations grouped by day. Each entry shows your name, the seat, and optionally the location, floor, and room (configurable in preferences). Open any booking to see a room floor plan with your seat highlighted. You can delete bookings directly from the list or the detail view. You can also "check-in" your booking from the list or the booking-view.
 
 ### Book a Seat
 
-Opens an interactive view to search for available seats and create a new booking for a chosen date and time slot.
+Opens a form to create a new booking from your saved favorite seats. The date is pre-filled with the next bookable weekday after your most recent reservation, based on your weekday preferences. You can adjust the date, seat, and time range (Full Day, Morning, Afternoon, or a custom HH:MM interval). The booking window is capped by your account's maximum advance booking limit.
 
-### Today's Bookings
+### Today's Booking
 
-A background command that runs every 15 minutes and surfaces your current-day booking as a subtitle in the Raycast menu bar. Shows the booked seat name and time range, or "No booking today" when nothing is scheduled.
+A background command that runs every 15 minutes and keeps its subtitle up to date with your current-day booking (seat name, floor, and room), or "No booking today" when nothing is scheduled. When launched manually it opens today's booking detail view, or jumps straight to **Book a Seat** if you have no booking yet.
+
+### Who Is in the Office
+
+Shows a list of colleagues who are booked in the office today, grouped by floor and room. Use the location dropdown to switch between office locations. Your own booking includes a **Check In** action and the option to delete the booking.
 
 ## Setup
 
@@ -39,9 +43,12 @@ Open Raycast, search for any Desk.ly command, and press `⌘` `⏎` to open its 
 | --- | --- | --- |
 | **Refresh Token** | Yes | The `refreshToken` cookie value copied above |
 | **API URL** | No | Override if you use a self-hosted desk.ly instance (default: `https://app.desk.ly`) |
-| **Show Location** | No | Show the location name as an accessory in the booking list |
-| **Show Floor** | No | Show the floor name as an accessory in the booking list (default: on) |
-| **Show Room** | No | Show the room name as an accessory in the booking list (default: on) |
+| **Show Time** | No | Show the booking time range as an accessory in booking lists (default: on) |
+| **Show Location** | No | Show the location name as an accessory in booking lists (default: off) |
+| **Show Floor** | No | Show the floor name as an accessory in booking lists (default: on) |
+| **Show Room** | No | Show the room name as an accessory in booking lists (default: on) |
+| **Seat Indicator Color** | No | Color of the seat dot on the room floor plan — Blue, Red, Green, or Black (default: Blue) |
+| **Seat Indicator Size** | No | Size of the seat dot on the room floor plan — S, M, or L (default: M) |
 
 ## Notes
 
