@@ -167,12 +167,21 @@
       ]
     },
     {
+      "name": "showTime",
+      "type": "checkbox",
+      "required": false,
+      "default": true,
+      "label": "Show Time",
+      "title": "Displayed information",
+      "description": "Show the booking time range as an accessory in the booking list"
+    },
+    {
       "name": "showLocation",
       "type": "checkbox",
       "required": false,
       "default": false,
       "label": "Show Location",
-      "title": "Displayed information",
+      "title": "",
       "description": "Which information should be shown in the booking list"
     },
     {

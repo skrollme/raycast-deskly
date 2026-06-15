@@ -28,7 +28,7 @@ export interface OfficeListSection {
 }
 
 export default function OfficeList({ sections }: { sections: OfficeListSection[] }) {
-  const { apiUrl } = getPreferenceValues<Preferences>();
+  const { apiUrl, showTime } = getPreferenceValues<Preferences>();
 
   return (
     <>
@@ -44,7 +44,7 @@ export default function OfficeList({ sections }: { sections: OfficeListSection[]
                 subtitle={item.subtitle}
                 accessories={[
                   ...(item.isCheckedIn ? [{ icon: Icon.CheckCircle }] : []),
-                  ...(item.timeRange ? [{ text: item.timeRange }] : []),
+                  ...(showTime && item.timeRange ? [{ text: item.timeRange }] : []),
                   ...(item.location ? [{ text: item.location }] : []),
                   ...(item.floor ? [{ text: item.floor, icon: Icon.ArrowUp }] : []),
                   ...(item.room ? [{ text: item.room, icon: Icon.Map }] : []),
@@ -60,6 +60,7 @@ export default function OfficeList({ sections }: { sections: OfficeListSection[]
                             booking={booking}
                             onDeleted={item.onDeleted ? () => item.onDeleted?.(booking.id) : undefined}
                             personName={item.personName}
+                            profileImage={item.profileImage}
                           />
                         }
                       />

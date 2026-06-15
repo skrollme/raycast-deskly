@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Action, ActionPanel, Detail, getPreferenceValues, Icon, showToast, Toast } from "@raycast/api";
 import { Booking, Preferences } from "../lib/types";
-import { confirmDeleteBooking } from "../lib/utils";
+import { confirmDeleteBooking, profileIcon } from "../lib/utils";
 import { isSameDay, renderTimeRange } from "../lib/format";
 import { checkInBooking, fetchRoomPlanImage } from "../api/deskly";
 
@@ -9,10 +9,12 @@ export default function BookingDetail({
   booking,
   onDeleted,
   personName,
+  profileImage,
 }: {
   booking: Booking;
   onDeleted?: () => void;
   personName?: string;
+  profileImage?: string | null;
 }) {
   const { apiUrl } = getPreferenceValues<Preferences>();
   const seat = booking.seatBooked ?? booking.seat;
@@ -85,7 +87,9 @@ export default function BookingDetail({
       }
       metadata={
         <Detail.Metadata>
-          {personName && <Detail.Metadata.Label title="Person" text={personName} icon={Icon.Person} />}
+          {personName && (
+            <Detail.Metadata.Label title="Person" text={personName} icon={profileIcon(profileImage, apiUrl)} />
+          )}
           {!personName && checkedIn && <Detail.Metadata.Label title="" text="Checked in" icon={Icon.CheckCircle} />}
           <Detail.Metadata.Label title="Date" text={dateStr} icon={Icon.Calendar} />
           {timeRange && <Detail.Metadata.Label title="Time" text={timeRange} icon={Icon.Clock} />}

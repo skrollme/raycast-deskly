@@ -1,6 +1,7 @@
 export interface Preferences {
   apiUrl: string;
   refreshToken: string;
+  showTime: boolean;
   showLocation: boolean;
   showFloor: boolean;
   showRoom: boolean;
