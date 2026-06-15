@@ -78,7 +78,7 @@ export async function fetchFavoriteSeats(): Promise<BookingSeat[]> {
   return (await response.json()) as BookingSeat[];
 }
 
-export async function bookSeat(date: Date, seat: BookingSeat): Promise<void> {
+export async function bookSeat(date: Date, seat: BookingSeat, fromTime: string, untilTime: string): Promise<void> {
   const preferences = getPreferenceValues<Preferences>();
   const authData = await fetchAccessToken();
   const information = await fetchInformation();
@@ -101,8 +101,8 @@ export async function bookSeat(date: Date, seat: BookingSeat): Promise<void> {
       guestAnonymous: false,
       resourceBookings: [
         {
-          from: `${datePrefix}T08:00:00`,
-          until: `${datePrefix}T17:00:00`,
+          from: `${datePrefix}T${fromTime}:00`,
+          until: `${datePrefix}T${untilTime}:00`,
           bookedCapacity: 1,
           cateringServiceText: null,
         },

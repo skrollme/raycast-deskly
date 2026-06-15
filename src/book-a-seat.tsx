@@ -2,6 +2,7 @@ import {
   Action,
   ActionPanel,
   Form,
+  getPreferenceValues,
   Icon,
   launchCommand,
   LaunchProps,
@@ -13,19 +14,43 @@ import {
 import { useCachedPromise } from "@raycast/utils";
 import { useEffect, useState } from "react";
 import { bookSeat, fetchBookings, fetchFavoriteSeats, fetchInformation } from "./api/deskly";
-import { Booking } from "./lib/types";
+import { Booking, Preferences } from "./lib/types";
+
+const TIME_PRESETS: Record<Preferences["bookAtTime"], { from: string; until: string }> = {
+  full: { from: "08:00", until: "17:00" },
+  morning: { from: "08:00", until: "12:00" },
+  afternoon: { from: "13:00", until: "17:00" },
+};
+
+function isValidTime(value: string): boolean {
+  if (!/^\d{2}:\d{2}$/.test(value)) return false;
+  const [h, m] = value.split(":").map(Number);
+  return h >= 0 && h <= 23 && m >= 0 && m <= 59;
+}
 import DesklyEmptyView from "./components/DesklyEmptyView";
 
-function nextWeekday(date: Date): Date {
+function nextBookableDay(date: Date, prefs: Preferences): Date {
+  // getDay(): 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+  const enabled = [
+    prefs.bookAtSunday,
+    prefs.bookAtMonday,
+    prefs.bookAtTuesday,
+    prefs.bookAtWednesday,
+    prefs.bookAtThursday,
+    prefs.bookAtFriday,
+    prefs.bookAtSaturday,
+  ];
   const next = new Date(date);
-  next.setDate(next.getDate() + 1);
-  while (next.getDay() === 0 || next.getDay() === 6) {
+  for (let i = 0; i < 14; i++) {
     next.setDate(next.getDate() + 1);
+    if (enabled[next.getDay()]) return next;
   }
-  return next;
+  // fallback: no bookable day found within two weeks, return next calendar day
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
 }
 
 async function fetchBookingFormData() {
+  const prefs = getPreferenceValues<Preferences>();
   const [favoriteSeats, information] = await Promise.all([fetchFavoriteSeats(), fetchInformation()]);
 
   const maxDays = information.accountInformation?.maxBookingDays ?? 30;
@@ -56,14 +81,21 @@ async function fetchBookingFormData() {
   const lastBookedDate = new Date(relevantBookings.length > 0 ? relevantBookings[0].date : today);
   lastBookedDate.setHours(0, 0, 0, 0);
 
-  return { favoriteSeats, defaultDate: nextWeekday(lastBookedDate), maxDays };
+  return { favoriteSeats, defaultDate: nextBookableDay(lastBookedDate, prefs), maxDays };
 }
 
 export default function Command(props: LaunchProps) {
   const contextDate = (props.launchContext as { defaultDate?: string } | undefined)?.defaultDate;
+  const prefs = getPreferenceValues<Preferences>();
+  const preset = TIME_PRESETS[prefs.bookAtTime] ?? TIME_PRESETS.full;
+
   const { data, isLoading, error } = useCachedPromise(fetchBookingFormData);
   const [date, setDate] = useState<Date | null | undefined>(contextDate ? new Date(contextDate) : undefined);
+  const [fromTime, setFromTime] = useState<string>(preset.from);
+  const [untilTime, setUntilTime] = useState<string>(preset.until);
   const [dateError, setDateError] = useState<string | undefined>();
+  const [fromError, setFromError] = useState<string | undefined>();
+  const [untilError, setUntilError] = useState<string | undefined>();
   const [seatError, setSeatError] = useState<string | undefined>();
 
   useEffect(() => {
@@ -117,6 +149,23 @@ export default function Command(props: LaunchProps) {
       }
     }
 
+    if (!isValidTime(fromTime)) {
+      setFromError("Please enter a valid time in HH:MM format.");
+      valid = false;
+    } else {
+      setFromError(undefined);
+    }
+
+    if (!isValidTime(untilTime)) {
+      setUntilError("Please enter a valid time in HH:MM format.");
+      valid = false;
+    } else if (isValidTime(fromTime) && fromTime >= untilTime) {
+      setUntilError('"Until" must be after "From".');
+      valid = false;
+    } else {
+      setUntilError(undefined);
+    }
+
     if (!values.seat) {
       setSeatError("Please select a seat.");
       valid = false;
@@ -131,7 +180,7 @@ export default function Command(props: LaunchProps) {
 
     const toast = await showToast({ style: Toast.Style.Animated, title: "Booking seat…" });
     try {
-      await bookSeat(values.date, seat);
+      await bookSeat(values.date, seat, fromTime, untilTime);
       toast.style = Toast.Style.Success;
       toast.title = "Seat booked!";
       const bookedDate = new Date(values.date);
@@ -156,6 +205,15 @@ export default function Command(props: LaunchProps) {
         </ActionPanel>
       }
     >
+      <Form.Dropdown id="seat" title="Seat" error={seatError} onChange={() => setSeatError(undefined)}>
+        {(data?.favoriteSeats ?? []).map((seat) => (
+          <Form.Dropdown.Item
+            key={seat.id}
+            value={seat.id}
+            title={`${seat.name} (${seat.floorName} · ${seat.roomName})`}
+          />
+        ))}
+      </Form.Dropdown>
       <Form.DatePicker
         id="date"
         title="Date"
@@ -167,15 +225,29 @@ export default function Command(props: LaunchProps) {
           setDateError(undefined);
         }}
       />
-      <Form.Dropdown id="seat" title="Seat" error={seatError} onChange={() => setSeatError(undefined)}>
-        {(data?.favoriteSeats ?? []).map((seat) => (
-          <Form.Dropdown.Item
-            key={seat.id}
-            value={seat.id}
-            title={`${seat.name} (${seat.floorName} · ${seat.roomName})`}
-          />
-        ))}
-      </Form.Dropdown>
+      <Form.TextField
+        id="fromTime"
+        title="From"
+        placeholder="HH:MM"
+        value={fromTime}
+        error={fromError}
+        onChange={(v) => {
+          setFromTime(v);
+          setFromError(undefined);
+          setUntilError(undefined);
+        }}
+      />
+      <Form.TextField
+        id="untilTime"
+        title="Until"
+        placeholder="HH:MM"
+        value={untilTime}
+        error={untilError}
+        onChange={(v) => {
+          setUntilTime(v);
+          setUntilError(undefined);
+        }}
+      />
     </Form>
   );
 }

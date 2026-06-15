@@ -20,7 +20,94 @@
       "name": "book-a-seat",
       "title": "Book a Seat",
       "description": "Book a desk.ly seat",
-      "mode": "view"
+      "mode": "view",
+      "preferences": [
+        {
+          "name": "bookAtMonday",
+          "type": "checkbox",
+          "required": false,
+          "default": true,
+          "label": "Book at Monday",
+          "title": "Weekdays for Booking",
+          "description": "Suggest mondays for booking if enabled"
+        },
+        {
+          "name": "bookAtTuesday",
+          "type": "checkbox",
+          "required": false,
+          "default": true,
+          "label": "Book at Tuesday",
+          "title": "",
+          "description": "Suggest tuesdays for booking if enabled"
+        },
+        {
+          "name": "bookAtWednesday",
+          "type": "checkbox",
+          "required": false,
+          "default": true,
+          "label": "Book at Wednesday",
+          "title": "",
+          "description": "Suggest wednesdays for booking if enabled"
+        },
+        {
+          "name": "bookAtThursday",
+          "type": "checkbox",
+          "required": false,
+          "default": true,
+          "label": "Book at Thursday",
+          "title": "",
+          "description": "Suggest thursdays for booking if enabled"
+        },
+        {
+          "name": "bookAtFriday",
+          "type": "checkbox",
+          "required": false,
+          "default": true,
+          "label": "Book at Friday",
+          "title": "",
+          "description": "Suggest fridays for booking if enabled"
+        },
+        {
+          "name": "bookAtSaturday",
+          "type": "checkbox",
+          "required": false,
+          "default": false,
+          "label": "Book at Saturday",
+          "title": "",
+          "description": "Suggest saturdays for booking if enabled"
+        },
+        {
+          "name": "bookAtSunday",
+          "type": "checkbox",
+          "required": false,
+          "default": false,
+          "label": "Book at Sunday",
+          "title": "",
+          "description": "Suggest sundays for booking if enabled"
+        },
+        {
+          "name": "bookAtTime",
+          "type": "dropdown",
+          "required": true,
+          "default": "full",
+          "title": "Booking Time",
+          "description": "Default booking timeframe for booking a seat",
+          "data": [
+            {
+              "title": "Full Day",
+              "value": "full"
+            },
+            {
+              "title": "Morning",
+              "value": "morning"
+            },
+            {
+              "title": "Afternoon",
+              "value": "afternoon"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "todays-booking",
@@ -58,8 +145,8 @@
       "required": false,
       "default": false,
       "label": "Show Location",
-      "title": "Booking Details",
-      "description": "Show the location name as an accessory in the booking list"
+      "title": "Displayed information",
+      "description": "Which information should be shown in the booking list"
     },
     {
       "name": "showFloor",

@@ -1,17 +1,24 @@
 import { useState, useEffect } from "react";
-import { Action, ActionPanel, Detail, getPreferenceValues, Icon, showToast, Toast, useNavigation } from "@raycast/api";
+import { Action, ActionPanel, Detail, getPreferenceValues, Icon, showToast, Toast } from "@raycast/api";
 import { Booking, Preferences } from "../lib/types";
 import { confirmDeleteBooking } from "../lib/utils";
 import { isSameDay, renderTimeRange } from "../lib/format";
 import { checkInBooking, fetchRoomPlanImage } from "../api/deskly";
 
-export default function BookingDetail({ booking, onDeleted }: { booking: Booking; onDeleted?: () => void }) {
+export default function BookingDetail({
+  booking,
+  onDeleted,
+  personName,
+}: {
+  booking: Booking;
+  onDeleted?: () => void;
+  personName?: string;
+}) {
   const { apiUrl } = getPreferenceValues<Preferences>();
   const seat = booking.seatBooked ?? booking.seat;
   const [roomPlanDataUri, setRoomPlanDataUri] = useState<string | null>(null);
   const [isLoadingImage, setIsLoadingImage] = useState(!!booking.seat?.room);
   const [checkedIn, setCheckedIn] = useState(booking.userCheckedIn ?? false);
-  const { pop } = useNavigation();
 
   const isToday = isSameDay(booking.date, new Date());
 
@@ -66,17 +73,20 @@ export default function BookingDetail({ booking, onDeleted }: { booking: Booking
               }}
             />
           )}
-          <Action
-            title="Delete Booking"
-            icon={Icon.Trash}
-            style={Action.Style.Destructive}
-            onAction={() => confirmDeleteBooking(booking, onDeleted ?? pop)}
-          />
+          {onDeleted && (
+            <Action
+              title="Delete Booking"
+              icon={Icon.Trash}
+              style={Action.Style.Destructive}
+              onAction={() => confirmDeleteBooking(booking, onDeleted)}
+            />
+          )}
         </ActionPanel>
       }
       metadata={
         <Detail.Metadata>
-          {checkedIn && <Detail.Metadata.Label title="" text="Checked in" icon={Icon.CheckCircle} />}
+          {personName && <Detail.Metadata.Label title="Person" text={personName} icon={Icon.Person} />}
+          {!personName && checkedIn && <Detail.Metadata.Label title="" text="Checked in" icon={Icon.CheckCircle} />}
           <Detail.Metadata.Label title="Date" text={dateStr} icon={Icon.Calendar} />
           {timeRange && <Detail.Metadata.Label title="Time" text={timeRange} icon={Icon.Clock} />}
           {booking.multipleBookings && (

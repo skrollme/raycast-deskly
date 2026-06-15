@@ -16,6 +16,7 @@ export interface OfficeListItem {
   floor?: string;
   room?: string;
   booking?: Booking;
+  personName?: string;
   onCheckedIn?: (id: string) => void;
   onDeleted?: (id: string) => void;
 }
@@ -54,9 +55,15 @@ export default function OfficeList({ sections }: { sections: OfficeListSection[]
                       <Action.Push
                         title="Show Details"
                         icon={Icon.Sidebar}
-                        target={<BookingDetail booking={booking} onDeleted={() => item.onDeleted?.(booking.id)} />}
+                        target={
+                          <BookingDetail
+                            booking={booking}
+                            onDeleted={item.onDeleted ? () => item.onDeleted?.(booking.id) : undefined}
+                            personName={item.personName}
+                          />
+                        }
                       />
-                      {isSameDay(booking.date, new Date()) && !item.isCheckedIn && (
+                      {isSameDay(booking.date, new Date()) && !item.isCheckedIn && item.onCheckedIn && (
                         <Action
                           title="Check In"
                           icon={Icon.CheckCircle}
@@ -80,12 +87,14 @@ export default function OfficeList({ sections }: { sections: OfficeListSection[]
                         icon={Icon.Globe}
                         url={`${apiUrl}/de/overview/${booking.date.toISOString().substring(0, 10)}`}
                       />
-                      <Action
-                        title="Delete Booking"
-                        icon={Icon.Trash}
-                        style={Action.Style.Destructive}
-                        onAction={() => confirmDeleteBooking(booking, () => item.onDeleted?.(booking.id))}
-                      />
+                      {item.onDeleted && (
+                        <Action
+                          title="Delete Booking"
+                          icon={Icon.Trash}
+                          style={Action.Style.Destructive}
+                          onAction={() => confirmDeleteBooking(booking, () => item.onDeleted?.(booking.id))}
+                        />
+                      )}
                     </ActionPanel>
                   ) : undefined
                 }

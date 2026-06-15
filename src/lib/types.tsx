@@ -4,6 +4,14 @@ export interface Preferences {
   showLocation: boolean;
   showFloor: boolean;
   showRoom: boolean;
+  bookAtMonday: boolean;
+  bookAtTuesday: boolean;
+  bookAtWednesday: boolean;
+  bookAtThursday: boolean;
+  bookAtFriday: boolean;
+  bookAtSaturday: boolean;
+  bookAtSunday: boolean;
+  bookAtTime: "full" | "morning" | "afternoon";
 }
 
 export interface Booking {
@@ -24,6 +32,7 @@ export interface BookingSeat {
   number: number | null;
   name: string;
   floorName: string;
+  locationId: string;
   locationName: string;
   roomName: string;
   room: string | null;
@@ -43,21 +52,10 @@ export interface Location {
   name: string;
 }
 
-export interface PresentResource {
-  id: string;
-  number: number | null;
-  name: string;
-  floorName: string;
-  locationName: string;
-  locationId: string;
-  room: string;
-  roomName: string;
-}
-
 export interface PresentBooking {
   id: string;
   type: string;
-  resource: PresentResource;
+  resource: BookingSeat;
   date: string;
   from: string;
   until: string;
