@@ -140,6 +140,33 @@
       "description": "Valid desk.ly Refresh Token which can be used for API Calls"
     },
     {
+      "name": "seatIndicatorColor",
+      "type": "dropdown",
+      "required": false,
+      "default": "blue",
+      "title": "Seat Indicator Color",
+      "description": "Color of the seat indicator dot on the room floor plan",
+      "data": [
+        { "title": "Blue", "value": "blue" },
+        { "title": "Red", "value": "red" },
+        { "title": "Green", "value": "green" },
+        { "title": "Black", "value": "black" }
+      ]
+    },
+    {
+      "name": "seatIndicatorSize",
+      "type": "dropdown",
+      "required": false,
+      "default": "M",
+      "title": "Seat Indicator Size",
+      "description": "Size of the seat indicator dot on the room floor plan",
+      "data": [
+        { "title": "S", "value": "S" },
+        { "title": "M", "value": "M" },
+        { "title": "L", "value": "L" }
+      ]
+    },
+    {
       "name": "showLocation",
       "type": "checkbox",
       "required": false,

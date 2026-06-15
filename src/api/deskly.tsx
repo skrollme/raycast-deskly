@@ -189,8 +189,17 @@ export function fetchRoomPlanImage(roomId: string, seat: BookingSeat): Promise<s
     const image = await Jimp.fromBuffer(buffer);
 
     if (seat.locationX != null && seat.locationY != null) {
-      const r = Math.round(image.width * 0.0125); // diameter = 2,5% of width → radius = 1,25%
-      const color = rgbaToInt(0x18, 0x46, 0xb9, 255);
+      const sizeMultiplier =
+        preferences.seatIndicatorSize === "S" ? 0.0075 : preferences.seatIndicatorSize === "L" ? 0.02 : 0.0125;
+      const r = Math.round(image.width * sizeMultiplier);
+      const colorMap: Record<string, [number, number, number]> = {
+        blue: [0x18, 0x46, 0xb9],
+        red: [0xd9, 0x1e, 0x18],
+        green: [0x1e, 0xa3, 0x4a],
+        black: [0x1a, 0x1a, 0x1a],
+      };
+      const [cr, cg, cb] = colorMap[preferences.seatIndicatorColor] ?? colorMap.blue;
+      const color = rgbaToInt(cr, cg, cb, 255);
       for (let y = seat.locationY - r; y <= seat.locationY + r; y++) {
         for (let x = seat.locationX - r; x <= seat.locationX + r; x++) {
           if ((x - seat.locationX) ** 2 + (y - seat.locationY) ** 2 <= r * r) {

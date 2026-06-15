@@ -12,6 +12,8 @@ export interface Preferences {
   bookAtSaturday: boolean;
   bookAtSunday: boolean;
   bookAtTime: "full" | "morning" | "afternoon";
+  seatIndicatorColor: "blue" | "red" | "green" | "black";
+  seatIndicatorSize: "S" | "M" | "L";
 }
 
 export interface Booking {
