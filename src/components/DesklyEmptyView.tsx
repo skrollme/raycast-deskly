@@ -1,5 +1,4 @@
 import { Action, ActionPanel, getPreferenceValues, Icon, List } from "@raycast/api";
-import { Preferences } from "../lib/types";
 
 type DesklyEmptyViewProps = {
   title: string;

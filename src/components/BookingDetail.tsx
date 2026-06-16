@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Action, ActionPanel, Detail, getPreferenceValues, Icon, showToast, Toast } from "@raycast/api";
-import { Booking, Preferences } from "../lib/types";
+import { Booking } from "../lib/types";
 import { confirmDeleteBooking, profileIcon } from "../lib/utils";
 import { isSameDay, renderTimeRange } from "../lib/format";
 import { checkInBooking, fetchRoomPlanImage } from "../api/deskly";
@@ -54,7 +54,7 @@ export default function BookingDetail({
           <Action.OpenInBrowser
             title="Open in Browser"
             icon={Icon.Globe}
-            url={`${apiUrl}/de/overview/${booking.date.toISOString().substring(0, 10)}`}
+            url={`${apiUrl}/en/overview/${booking.date.toISOString().substring(0, 10)}`}
           />
           {isToday && !checkedIn && (
             <Action

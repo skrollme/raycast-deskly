@@ -1,7 +1,7 @@
 import { Action, ActionPanel, getPreferenceValues, Icon, List, showToast, Toast } from "@raycast/api";
 import BookingDetail from "./BookingDetail";
 import { checkInBooking } from "../api/deskly";
-import { Booking, Preferences } from "../lib/types";
+import { Booking } from "../lib/types";
 import { confirmDeleteBooking, profileIcon } from "../lib/utils";
 import { isSameDay } from "../lib/format";
 
@@ -86,7 +86,7 @@ export default function OfficeList({ sections }: { sections: OfficeListSection[]
                       <Action.OpenInBrowser
                         title="Open in Browser"
                         icon={Icon.Globe}
-                        url={`${apiUrl}/de/overview/${booking.date.toISOString().substring(0, 10)}`}
+                        url={`${apiUrl}/en/overview/${booking.date.toISOString().substring(0, 10)}`}
                       />
                       {item.onDeleted && (
                         <Action

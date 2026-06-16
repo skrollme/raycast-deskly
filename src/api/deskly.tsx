@@ -1,7 +1,6 @@
 import { getPreferenceValues, LocalStorage } from "@raycast/api";
-import { AuthData, Booking, BookingSeat, Information, Preferences, PresentPerson } from "../lib/types";
+import { AuthData, Booking, BookingSeat, Information, PresentPerson } from "../lib/types";
 import { pad2, toISODate } from "../lib/format";
-import fetch from "node-fetch";
 import { Jimp, JimpMime, rgbaToInt } from "jimp";
 
 const roomPlanImageCache = new Map<string, Promise<string | null>>();
@@ -179,7 +178,7 @@ export function fetchRoomPlanImage(roomId: string, seat: BookingSeat): Promise<s
     const preferences = getPreferenceValues<Preferences>();
     const authData = await fetchAccessToken();
 
-    const response = await fetch(`${preferences.apiUrl}/de/image/room-plan/${roomId}`, {
+    const response = await fetch(`${preferences.apiUrl}/en/image/room-plan/${roomId}`, {
       headers: { Authorization: `Bearer ${authData.token}` },
     });
 

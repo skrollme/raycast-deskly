@@ -1,22 +1,3 @@
-export interface Preferences {
-  apiUrl: string;
-  refreshToken: string;
-  showTime: boolean;
-  showLocation: boolean;
-  showFloor: boolean;
-  showRoom: boolean;
-  bookAtMonday: boolean;
-  bookAtTuesday: boolean;
-  bookAtWednesday: boolean;
-  bookAtThursday: boolean;
-  bookAtFriday: boolean;
-  bookAtSaturday: boolean;
-  bookAtSunday: boolean;
-  bookAtTime: "full" | "morning" | "afternoon";
-  seatIndicatorColor: "blue" | "red" | "green" | "black";
-  seatIndicatorSize: "S" | "M" | "L";
-}
-
 export interface Booking {
   id: string;
   date: Date;

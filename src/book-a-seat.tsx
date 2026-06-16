@@ -14,9 +14,10 @@ import {
 import { useCachedPromise } from "@raycast/utils";
 import { useEffect, useState } from "react";
 import { bookSeat, fetchBookings, fetchFavoriteSeats, fetchInformation } from "./api/deskly";
-import { Booking, Preferences } from "./lib/types";
+import { Booking } from "./lib/types";
+import DesklyEmptyView from "./components/DesklyEmptyView";
 
-const TIME_PRESETS: Record<Preferences["bookAtTime"], { from: string; until: string }> = {
+const TIME_PRESETS: Record<Preferences.BookASeat["bookAtTime"], { from: string; until: string }> = {
   full: { from: "08:00", until: "17:00" },
   morning: { from: "08:00", until: "12:00" },
   afternoon: { from: "13:00", until: "17:00" },
@@ -27,9 +28,8 @@ function isValidTime(value: string): boolean {
   const [h, m] = value.split(":").map(Number);
   return h >= 0 && h <= 23 && m >= 0 && m <= 59;
 }
-import DesklyEmptyView from "./components/DesklyEmptyView";
 
-function nextBookableDay(date: Date, prefs: Preferences): Date {
+function nextBookableDay(date: Date, prefs: Preferences.BookASeat): Date {
   // getDay(): 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
   const enabled = [
     prefs.bookAtSunday,
@@ -50,7 +50,7 @@ function nextBookableDay(date: Date, prefs: Preferences): Date {
 }
 
 async function fetchBookingFormData() {
-  const prefs = getPreferenceValues<Preferences>();
+  const prefs = getPreferenceValues<Preferences.BookASeat>();
   const [favoriteSeats, information] = await Promise.all([fetchFavoriteSeats(), fetchInformation()]);
 
   const maxDays = information.accountInformation?.maxBookingDays ?? 30;
@@ -86,7 +86,7 @@ async function fetchBookingFormData() {
 
 export default function Command(props: LaunchProps) {
   const contextDate = (props.launchContext as { defaultDate?: string } | undefined)?.defaultDate;
-  const prefs = getPreferenceValues<Preferences>();
+  const prefs = getPreferenceValues<Preferences.BookASeat>();
   const preset = TIME_PRESETS[prefs.bookAtTime] ?? TIME_PRESETS.full;
 
   const { data, isLoading, error } = useCachedPromise(fetchBookingFormData);

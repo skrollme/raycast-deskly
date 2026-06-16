@@ -1,3 +1,3 @@
 # desk.ly Changelog
 
-## [Initial Version] - 2026-06-15
+## [Initial Version] - {PR_MERGE_DATE}

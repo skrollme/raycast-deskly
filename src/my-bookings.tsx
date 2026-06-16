@@ -14,7 +14,7 @@ import BookingDetail from "./components/BookingDetail";
 import DesklyEmptyView from "./components/DesklyEmptyView";
 import OfficeList, { OfficeListSection } from "./components/OfficeList";
 import { fetchBookings, fetchInformation } from "./api/deskly";
-import { Booking, Preferences } from "./lib/types";
+import { Booking } from "./lib/types";
 import { renderBookingDate, renderSeatName } from "./lib/utils";
 import { isSameDay, relativeDay, renderTimeRange } from "./lib/format";
 
