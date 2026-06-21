@@ -65,9 +65,11 @@ export async function fetchBookings(year: number, month: number): Promise<Bookin
     { method: "GET" }
   );
 
-  // This endpoint returns 200 with a non-array body when the token is invalid, so the array check —
-  // not just response.ok — is the real signal. Guard both to avoid parsing an error body blindly.
-  const data = response.ok ? await response.json() : null;
+  if (!response.ok) throw new Error(`${response.status} ${response.statusText}: ${await response.text()}`);
+
+  // This endpoint returns 200 with a non-array body when the token is invalid — the array shape is
+  // the real signal for that case.
+  const data = await response.json();
   if (!Array.isArray(data)) {
     throw new Error("Refresh token expired or invalid. Please update it in the extension preferences.");
   }
