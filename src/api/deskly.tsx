@@ -1,5 +1,5 @@
 import { getPreferenceValues, LocalStorage } from "@raycast/api";
-import { AuthData, Booking, BookingSeat, Information, PresentPerson } from "../lib/types";
+import { AuthData, Booking, BookingSeat, Information, Location, PresentPerson, Resource } from "../lib/types";
 import { pad2, toISODate } from "../lib/format";
 import { Jimp, JimpMime, rgbaToInt } from "jimp";
 
@@ -85,7 +85,48 @@ export async function fetchFavoriteSeats(): Promise<BookingSeat[]> {
   return (await response.json()) as BookingSeat[];
 }
 
-export async function bookSeat(date: Date, seat: BookingSeat, fromTime: string, untilTime: string): Promise<void> {
+export async function fetchSpaces(): Promise<Location[]> {
+  const preferences = getPreferenceValues<Preferences>();
+  const authData = await fetchAccessToken();
+
+  const apiBase = new URL(preferences.apiUrl);
+  const growUrl = `${apiBase.protocol}//grow.${apiBase.hostname.split(".").slice(1).join(".")}`;
+
+  const response = await fetch(`${growUrl}/de/api/space/list`, {
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${authData.token}` },
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`${response.status} ${response.statusText}: ${body}`);
+  }
+  const data = (await response.json()) as { locations: Location[] };
+  return data.locations;
+}
+
+export async function fetchAvailableSeats(
+  roomId: string,
+  dateStr: string,
+  fromTime: string,
+  untilTime: string
+): Promise<Resource[]> {
+  const preferences = getPreferenceValues<Preferences>();
+  const authData = await fetchAccessToken();
+
+  const response = await fetch(`${preferences.apiUrl}/en/api/resource/room/usage/list/${roomId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${authData.token}` },
+    body: JSON.stringify({
+      dateTimes: [{ from: `${dateStr}T${fromTime}:00`, until: `${dateStr}T${untilTime}:00` }],
+    }),
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`${response.status} ${response.statusText}: ${body}`);
+  }
+  return (await response.json()) as Resource[];
+}
+
+export async function bookSeat(date: Date, resourceId: string, fromTime: string, untilTime: string): Promise<void> {
   const preferences = getPreferenceValues<Preferences>();
   const authData = await fetchAccessToken();
   const information = await fetchInformation();
@@ -101,7 +142,7 @@ export async function bookSeat(date: Date, seat: BookingSeat, fromTime: string, 
     body: JSON.stringify({
       email: false,
       user: information.user.id,
-      resource: seat.id,
+      resource: resourceId,
       guestName: null,
       guestEmail: null,
       guestCompany: null,
@@ -119,6 +160,12 @@ export async function bookSeat(date: Date, seat: BookingSeat, fromTime: string, 
 
   if (!response.ok) {
     const body = await response.text();
+    try {
+      const json = JSON.parse(body) as { detail?: string };
+      if (json.detail) throw new Error(json.detail);
+    } catch (e) {
+      if (e instanceof SyntaxError === false) throw e;
+    }
     throw new Error(`${response.status} ${response.statusText}: ${body}`);
   }
 }

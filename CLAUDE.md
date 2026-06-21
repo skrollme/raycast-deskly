@@ -22,7 +22,7 @@ This is a Raycast extension for managing [desk.ly](https://desk.ly) desk-sharing
 
 - [src/my-bookings.tsx](src/my-bookings.tsx) — "My Bookings" list view command; fetches current + next month bookings via `fetchBookings`, renders them grouped by day using `OfficeList`; subtitle shows the next upcoming booking; supports `openTodayBooking` launch context to push directly into `BookingDetail`
 - [src/todays-booking.tsx](src/todays-booking.tsx) — "Today's Booking" no-view command; runs every 15 minutes in the background; fetches today's booking via `fetchBookings` and updates the command subtitle with seat name + time, or "No booking today"
-- [src/book-a-seat.tsx](src/book-a-seat.tsx) — "Book a Seat" form command; loads favorite seats and existing bookings to suggest a default date (next weekday after the last booked date); validates date range against `maxBookingDays` from account info; calls `bookSeat()` on submit; supports `defaultDate` launch context
+- [src/book-a-seat.tsx](src/book-a-seat.tsx) — "Book a Seat" form command; loads the space hierarchy (`fetchSpaces`) and existing bookings to suggest a default date (next weekday after the last booked date); presents cascading Location → Floor/Room dropdowns (pre-selected from `user.primaryRoom`); fetches available seats for the selected room and time window via `fetchAvailableSeats`; validates date range against `maxBookingDays` from account info; calls `bookSeat()` on submit; supports `defaultDate` launch context
 - [src/who-is-in-the-office.tsx](src/who-is-in-the-office.tsx) — "Who Is in Office" list view command; calls `fetchPresentResources` for the selected location and today's date; groups results by floor/room using `OfficeList`; a `List.Dropdown` in the search bar lets the user switch between available locations (defaults to `user.primaryRoom.location` from account info); only the current user's own booking supports check-in and delete actions
 
 ### Components
@@ -36,8 +36,10 @@ This is a Raycast extension for managing [desk.ly](https://desk.ly) desk-sharing
 [src/api/deskly.tsx](src/api/deskly.tsx) is the sole HTTP client. Key functions:
 
 - `fetchBookings(year, month)` — month-based endpoint; returns `Booking[]` using the `seat` field
-- `fetchFavoriteSeats()` — returns the user's favorite `BookingSeat[]` from `/de/api/user/favorite/seats`
-- `bookSeat(date, seat, fromTime, untilTime)` — POSTs to `/en/api/resource-booking` to create a booking for the given time window
+- `fetchFavoriteSeats()` — returns the user's favorite `BookingSeat[]` from `/en/api/user/favorite/seats`; no longer used by `book-a-seat` but kept for potential future use
+- `fetchSpaces()` — GETs `{growUrl}/de/api/space/list` where `growUrl` is derived from `preferences.apiUrl` by replacing the subdomain with `grow` (e.g. `https://app.desk.ly` → `https://grow.desk.ly`); returns `Location[]` with the full `floors → rooms` hierarchy
+- `fetchAvailableSeats(roomId, dateStr, fromTime, untilTime)` — POSTs to `/en/api/resource/room/usage/list/{roomId}` with a `dateTimes` payload; returns `Resource[]` representing seats and their availability for the given time window; **requires a room ID** (`App\Entity\Room`) — passing a location ID returns 404
+- `bookSeat(date, resourceId, fromTime, untilTime)` — POSTs to `/en/api/resource-booking` to create a booking; `resourceId` is the `Resource.resource` string from `fetchAvailableSeats`
 - `deleteBooking(bookingId)` — DELETEs a booking
 - `checkInBooking(bookingId)` — POSTs a check-in for a booking
 - `fetchPresentResources(locationId, date)` — returns `PresentPerson[]` for who is booked at a location on a given date; used by `who-is-in-the-office`
@@ -56,7 +58,7 @@ This is a Raycast extension for managing [desk.ly](https://desk.ly) desk-sharing
 
 ### Types
 
-All shared interfaces live in [src/lib/types.tsx](src/lib/types.tsx): `Booking`, `BookingSeat`, `AuthData`, `Location`, `PresentBooking`, `PresentPerson`, `Information`.
+All shared interfaces live in [src/lib/types.tsx](src/lib/types.tsx): `Booking`, `BookingSeat`, `AuthData`, `Location`, `Floor`, `Room`, `Resource`, `PresentBooking`, `PresentPerson`, `Information`.
 
 `Preferences` is **not** declared in `types.tsx`. Raycast auto-generates `declare type Preferences` (and per-command `Preferences.CommandName` subtypes) in `raycast-env.d.ts` from `package.json`. Use `getPreferenceValues<Preferences>()` for global prefs and `getPreferenceValues<Preferences.BookASeat>()` when command-specific keys (weekday toggles, `bookAtTime`) are needed. Never hand-write this interface — it will silently drift from the manifest.
 
@@ -64,7 +66,11 @@ All shared interfaces live in [src/lib/types.tsx](src/lib/types.tsx): `Booking`,
 
 `Booking` includes `userCheckedIn: boolean | null` — set by the API when the user has checked in for that day.
 
-`Information` includes `accountInformation.maxBookingDays`, `user` (with `id`, `firstName`, `lastName`, `email`, `primaryRoom`), and `availableLocations: Location[]`.
+`Location` has `id`, `name`, and `floors: Floor[]`. `Floor` has `id`, `name`, and `rooms: Room[]`. `Room` has `id` and `name`. This three-level hierarchy is returned by `fetchSpaces()` and drives the cascading dropdowns in `book-a-seat`.
+
+`Resource` represents a bookable seat returned by `fetchAvailableSeats`; key fields are `resource` (the ID to pass to `bookSeat`), `resourceName`, `bookedBySelf`, and `availability`.
+
+`Information` includes `accountInformation.maxBookingDays`, `user` (with `id`, `firstName`, `lastName`, `email`, `primaryRoom`), and `availableLocations: Location[]`. `user.primaryRoom` has `id` (room ID), `floor` (floor ID), and `location` (location ID) — used to pre-select the cascading dropdowns in `book-a-seat`. Note: pre-selection must use the room ID to look up the matching location in the `fetchSpaces` tree rather than relying on `primaryRoom.location` directly, since the two APIs may return different location ID formats.
 
 `PresentPerson` represents a person booked in the office on a given day; it contains `dayBookings: PresentBooking[]`, each of which references a `BookingSeat` as `resource`.
 
