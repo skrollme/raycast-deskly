@@ -92,7 +92,7 @@ async function fetchBookingFormData() {
     }
   }
 
-  // fetchSpaces (grow API) and fetchInformation use different location IDs — merge timeframes by name.
+  // fetchSpaces and fetchInformation use different location IDs — merge timeframes by name.
   // Normalize from/until to HH:MM; the API may return HH:MM:SS and fetchAvailableSeats appends ":00".
   const toHHMM = (t: string) => t.slice(0, 5);
   const timeframesByName = new Map(

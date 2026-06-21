@@ -22,15 +22,11 @@ interface CachedInformation {
   fetchedAt: number;
 }
 
-/**
- * Authenticated fetch against the desk.ly API. Resolves the access token, prepends the configured
- * base URL (overridable via `baseUrl` for the grow API), and sets the JSON + Authorization headers.
- */
-async function desklyFetch(path: string, init?: RequestInit & { baseUrl?: string }): Promise<Response> {
+async function desklyFetch(path: string, init?: RequestInit): Promise<Response> {
   const { apiUrl } = getPreferenceValues<Preferences>();
   const authData = await fetchAccessToken();
-  const { baseUrl, headers, ...rest } = init ?? {};
-  return fetch((baseUrl ?? apiUrl) + path, {
+  const { headers, ...rest } = init ?? {};
+  return fetch(apiUrl + path, {
     ...rest,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${authData.token}`, ...headers },
   });
@@ -85,11 +81,7 @@ export async function fetchFavoriteSeats(): Promise<BookingSeat[]> {
 }
 
 export async function fetchSpaces(): Promise<Location[]> {
-  const { apiUrl } = getPreferenceValues<Preferences>();
-  const apiBase = new URL(apiUrl);
-  const growUrl = `${apiBase.protocol}//grow.${apiBase.hostname.split(".").slice(1).join(".")}`;
-
-  const response = await assertOk(await desklyFetch("/de/api/space/list", { baseUrl: growUrl }));
+  const response = await assertOk(await desklyFetch("/de/api/space/list"));
   const data = (await response.json()) as { locations: Location[] };
   return data.locations;
 }
