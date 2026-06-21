@@ -23,6 +23,7 @@ import {
 } from "./api/deskly";
 import { Booking } from "./lib/types";
 import { toISODate } from "./lib/format";
+import { failToast } from "./lib/utils";
 import DesklyEmptyView from "./components/DesklyEmptyView";
 
 function nextBookableDay(date: Date, prefs: Preferences.BookASeat): Date {
@@ -218,9 +219,7 @@ export default function Command(props: LaunchProps) {
       }
       await popToRoot();
     } catch (e) {
-      toast.style = Toast.Style.Failure;
-      toast.title = "Booking failed";
-      toast.message = e instanceof Error ? e.message : String(e);
+      failToast(toast, "Booking failed", e);
     }
   }
 
@@ -281,9 +280,10 @@ export default function Command(props: LaunchProps) {
         ))}
       </Form.Dropdown>
       <Form.Dropdown
+        key={`timeframe-${effectiveLocation ?? "unset"}`}
         id="timeframe"
         title="Timeframe"
-        value={effectiveTimeframeKey}
+        defaultValue={effectiveTimeframeKey}
         error={timeframeError}
         onChange={(value) => {
           setTimeframeKey(value);

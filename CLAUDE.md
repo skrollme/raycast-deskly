@@ -60,7 +60,7 @@ This is a Raycast extension for managing [desk.ly](https://desk.ly) desk-sharing
 
 All shared interfaces live in [src/lib/types.tsx](src/lib/types.tsx): `Booking`, `BookingSeat`, `AuthData`, `Location`, `Timeframe`, `Floor`, `Room`, `Resource`, `PresentBooking`, `PresentPerson`, `Information`.
 
-`Preferences` is **not** declared in `types.tsx`. Raycast auto-generates `declare type Preferences` (and per-command `Preferences.CommandName` subtypes) in `raycast-env.d.ts` from `package.json`. Use `getPreferenceValues<Preferences>()` for global prefs and `getPreferenceValues<Preferences.BookASeat>()` when command-specific keys (weekday toggles, `bookAtTime`) are needed. Never hand-write this interface — it will silently drift from the manifest.
+`Preferences` is **not** declared in `types.tsx`. Raycast auto-generates `declare type Preferences` (and per-command `Preferences.CommandName` subtypes) in `raycast-env.d.ts` from `package.json`. Use `getPreferenceValues<Preferences>()` for global prefs and `getPreferenceValues<Preferences.BookASeat>()` when command-specific keys (the `bookAt<Weekday>` toggles) are needed. Never hand-write this interface — it will silently drift from the manifest.
 
 `BookingSeat` includes `room` (room ID for floor plan fetch), `locationX`, and `locationY` (pixel coordinates for seat overlay).
 
@@ -108,7 +108,8 @@ Global preferences:
 
 - `bookAtMonday` / `bookAtTuesday` / `bookAtWednesday` / `bookAtThursday` / `bookAtFriday` — optional booleans, all default `true`; control which weekdays are candidates when computing the default booking date
 - `bookAtSaturday` / `bookAtSunday` — optional booleans, default `false`
-- `bookAtTime` — dropdown (full/morning/afternoon); declared in the manifest but currently unused in code — the timeframe is selected interactively via an API-derived Timeframe dropdown
+
+The timeframe is selected interactively via an API-derived Timeframe dropdown (sourced from `information.availableLocations`), not from a preference.
 
 Prettier is configured for 120-character line width with double quotes (see [.prettierrc](.prettierrc)).
 
