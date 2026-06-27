@@ -146,7 +146,9 @@ export async function fetchPresentResources(locationId: string, date: string): P
 }
 
 export async function checkInBooking(bookingId: string): Promise<void> {
-  await assertOk(await desklyFetch(`/en/api/dayBooking/${bookingId}/checkin`, { method: "PUT" }));
+  const res = await desklyFetch(`/en/api/dayBooking/${bookingId}/checkin`, { method: "PUT" });
+  if (res.status === 403) throw new Error("Check-in is not available yet. Try again closer to your booking time.");
+  await assertOk(res);
 }
 
 export async function deleteBooking(bookingId: string): Promise<void> {
