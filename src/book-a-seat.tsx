@@ -107,7 +107,9 @@ async function fetchBookingFormData() {
     defaultDate: nextBookableDay(lastBookedDate, prefs),
     maxDays,
     spaces: spacesWithTimeframes,
-    primaryLocation: primaryLocationId ?? information.user?.primaryRoom?.location ?? undefined,
+    // Only use an ID resolved from the spaces tree — primaryRoom.location comes from a
+    // different endpoint whose IDs don't match spaces, so it would never resolve a location.
+    primaryLocation: primaryLocationId,
     primaryRoom: primaryRoomId,
     favoriteSeatIds: favoriteSeats.map((s) => s.id),
   };
