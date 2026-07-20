@@ -7,4 +7,4 @@
 - Favorite seats are still surfaced first in the seat list (⭐)
 - Refactored the API client and commands for consistency and maintainability
 
-## [Initial Version] - {PR_MERGE_DATE}
+## [Initial Version] - 2026-07-19
