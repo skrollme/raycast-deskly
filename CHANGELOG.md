@@ -1,5 +1,10 @@
 # desk.ly Changelog
 
+## [Less dependencies] - {PR_MERGE_DATE}
+
+- Do not rely on an external image-processing library anymore
+- More descriptive errors, when invalid desk.ly URLs were entered
+
 ## [Seat Availability + Descriptive Errors] - 2026-08-18
 
 - Book a Seat: seat list now correctly excludes seats that are occupied or not allowed to be booked
